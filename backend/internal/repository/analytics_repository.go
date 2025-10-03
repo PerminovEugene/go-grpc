@@ -41,7 +41,7 @@ func (r *AnalyticsRepository) GetAggregatedCategoryScores(startDate, endDate tim
 	for rows.Next() {
 		var score models.CategoryScore
 		var ratingDate time.Time
-		
+
 		err := rows.Scan(
 			&score.CategoryID,
 			&score.CategoryName,
@@ -52,7 +52,7 @@ func (r *AnalyticsRepository) GetAggregatedCategoryScores(startDate, endDate tim
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan category score: %v", err)
 		}
-		
+
 		score.Date = ratingDate
 		scores = append(scores, score)
 	}
@@ -85,7 +85,7 @@ func (r *AnalyticsRepository) GetWeeklyAggregatedCategoryScores(startDate, endDa
 	for rows.Next() {
 		var score models.CategoryScore
 		var weekStart time.Time
-		
+
 		err := rows.Scan(
 			&score.CategoryID,
 			&score.CategoryName,
@@ -96,7 +96,7 @@ func (r *AnalyticsRepository) GetWeeklyAggregatedCategoryScores(startDate, endDa
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan weekly category score: %v", err)
 		}
-		
+
 		score.Date = weekStart
 		scores = append(scores, score)
 	}
@@ -129,7 +129,7 @@ func (r *AnalyticsRepository) GetScoresByTicket(startDate, endDate time.Time) ([
 	var scores []models.TicketCategoryScore
 	for rows.Next() {
 		var score models.TicketCategoryScore
-		
+
 		err := rows.Scan(
 			&score.TicketID,
 			&score.CategoryID,
@@ -140,7 +140,7 @@ func (r *AnalyticsRepository) GetScoresByTicket(startDate, endDate time.Time) ([
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan ticket category score: %v", err)
 		}
-		
+
 		scores = append(scores, score)
 	}
 
@@ -158,7 +158,7 @@ func (r *AnalyticsRepository) GetOverallQualityScore(startDate, endDate time.Tim
 
 	var overallScore float64
 	var totalRatings int
-	
+
 	err := r.db.QueryRow(query, startDate, endDate).Scan(&overallScore, &totalRatings)
 	if err != nil {
 		return 0, 0, fmt.Errorf("failed to query overall quality score: %v", err)
@@ -167,23 +167,9 @@ func (r *AnalyticsRepository) GetOverallQualityScore(startDate, endDate time.Tim
 	return overallScore, totalRatings, nil
 }
 
-func (r *AnalyticsRepository) GetPeriodOverPeriodChange(currentStart, currentEnd, previousStart, previousEnd time.Time) (float64, float64, error) {
-	currentScore, _, err := r.GetOverallQualityScore(currentStart, currentEnd)
-	if err != nil {
-		return 0, 0, fmt.Errorf("failed to get current period score: %v", err)
-	}
-
-	previousScore, _, err := r.GetOverallQualityScore(previousStart, previousEnd)
-	if err != nil {
-		return 0, 0, fmt.Errorf("failed to get previous period score: %v", err)
-	}
-
-	return currentScore, previousScore, nil
-}
-
 func (r *AnalyticsRepository) GetRatingCategories() ([]models.RatingCategory, error) {
 	query := `SELECT id, name, weight FROM rating_categories ORDER BY name`
-	
+
 	rows, err := r.db.Query(query)
 	if err != nil {
 		return nil, fmt.Errorf("failed to query rating categories: %v", err)
@@ -193,12 +179,12 @@ func (r *AnalyticsRepository) GetRatingCategories() ([]models.RatingCategory, er
 	var categories []models.RatingCategory
 	for rows.Next() {
 		var category models.RatingCategory
-		
+
 		err := rows.Scan(&category.ID, &category.Name, &category.Weight)
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan rating category: %v", err)
 		}
-		
+
 		categories = append(categories, category)
 	}
 

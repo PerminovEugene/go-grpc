@@ -5,11 +5,10 @@ import (
 	"fmt"
 	"log"
 	"net"
-	"time"
 
 	"go-grpc-backend/internal/database"
-	"go-grpc-backend/internal/models"
 	"go-grpc-backend/internal/repository"
+	"go-grpc-backend/internal/service"
 	"go-grpc-backend/proto"
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -18,6 +17,7 @@ import (
 type AnalyticsServer struct {
 	proto.UnimplementedAnalyticsServiceServer
 	analyticsRepo *repository.AnalyticsRepository
+	scoreService  *service.ScoreService
 	grpcServer    *grpc.Server
 }
 
@@ -28,10 +28,12 @@ func NewAnalyticsServer() (*AnalyticsServer, error) {
 	}
 
 	analyticsRepo := repository.NewAnalyticsRepository(db.DB)
+	scoreService := service.NewScoreService(analyticsRepo)
 	grpcServer := grpc.NewServer()
 
 	server := &AnalyticsServer{
 		analyticsRepo: analyticsRepo,
+		scoreService:  scoreService,
 		grpcServer:    grpcServer,
 	}
 
@@ -65,18 +67,7 @@ func (s *AnalyticsServer) GetAggregatedCategoryScores(ctx context.Context, req *
 	startDate := req.StartDate.AsTime()
 	endDate := req.EndDate.AsTime()
 	
-	duration := endDate.Sub(startDate)
-	useWeekly := duration > 30*24*time.Hour
-	
-	var scores []models.CategoryScore
-	var err error
-	
-	if useWeekly {
-		scores, err = s.analyticsRepo.GetWeeklyAggregatedCategoryScores(startDate, endDate)
-	} else {
-		scores, err = s.analyticsRepo.GetAggregatedCategoryScores(startDate, endDate)
-	}
-	
+	scores, err := s.scoreService.GetAggregatedCategoryScores(startDate, endDate)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get aggregated category scores: %v", err)
 	}
@@ -104,7 +95,7 @@ func (s *AnalyticsServer) GetScoresByTicket(ctx context.Context, req *proto.Scor
 	startDate := req.StartDate.AsTime()
 	endDate := req.EndDate.AsTime()
 	
-	scores, err := s.analyticsRepo.GetScoresByTicket(startDate, endDate)
+	scores, err := s.scoreService.GetScoresByTicket(startDate, endDate)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get scores by ticket: %v", err)
 	}
@@ -132,7 +123,7 @@ func (s *AnalyticsServer) GetOverallQualityScore(ctx context.Context, req *proto
 	startDate := req.StartDate.AsTime()
 	endDate := req.EndDate.AsTime()
 	
-	overallScore, totalRatings, err := s.analyticsRepo.GetOverallQualityScore(startDate, endDate)
+	overallScore, totalRatings, err := s.scoreService.GetOverallQualityScore(startDate, endDate)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get overall quality score: %v", err)
 	}
@@ -151,16 +142,13 @@ func (s *AnalyticsServer) GetPeriodOverPeriodChange(ctx context.Context, req *pr
 	previousStart := req.PreviousStart.AsTime()
 	previousEnd := req.PreviousEnd.AsTime()
 	
-	currentScore, previousScore, err := s.analyticsRepo.GetPeriodOverPeriodChange(
+	currentScore, previousScore, err := s.scoreService.GetPeriodOverPeriodChange(
 		currentStart, currentEnd, previousStart, previousEnd)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get period over period change: %v", err)
 	}
 	
-	var changePercentage float64
-	if previousScore > 0 {
-		changePercentage = ((currentScore - previousScore) / previousScore) * 100
-	}
+	changePercentage := s.scoreService.CalculateChangePercentage(currentScore, previousScore)
 	
 	return &proto.PeriodOverPeriodChangeResponse{
 		CurrentPeriodScore:  currentScore,
