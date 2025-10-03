@@ -1,0 +1,93 @@
+syntax = "proto3";
+
+package proto;
+
+option go_package = "go-grpc-backend/proto";
+
+import "google/protobuf/timestamp.proto";
+
+message RatingCategory {
+  int32 id = 1;
+  string name = 2;
+  int32 weight = 3;
+}
+
+message CategoryScore {
+  int32 category_id = 1;
+  string category_name = 2;
+  double score = 3;
+  int32 rating_count = 4;
+  google.protobuf.Timestamp date = 5;
+}
+
+message DailyAggregatedScoresResponse {
+  repeated CategoryScore scores = 1;
+  google.protobuf.Timestamp start_date = 2;
+  google.protobuf.Timestamp end_date = 3;
+}
+
+message WeeklyAggregatedScoresResponse {
+  repeated CategoryScore scores = 1;
+  google.protobuf.Timestamp start_date = 2;
+  google.protobuf.Timestamp end_date = 3;
+}
+
+message TicketCategoryScore {
+  int32 ticket_id = 1;
+  int32 category_id = 2;
+  string category_name = 3;
+  double score = 4;
+  int32 rating_count = 5;
+}
+
+message ScoresByTicketResponse {
+  repeated TicketCategoryScore scores = 1;
+  google.protobuf.Timestamp start_date = 2;
+  google.protobuf.Timestamp end_date = 3;
+}
+
+message OverallQualityScoreResponse {
+  double overall_score = 1;
+  int32 total_ratings = 2;
+  google.protobuf.Timestamp start_date = 3;
+  google.protobuf.Timestamp end_date = 4;
+}
+
+message PeriodOverPeriodChangeResponse {
+  double current_period_score = 1;
+  double previous_period_score = 2;
+  double change_percentage = 3;
+  google.protobuf.Timestamp current_start = 4;
+  google.protobuf.Timestamp current_end = 5;
+  google.protobuf.Timestamp previous_start = 6;
+  google.protobuf.Timestamp previous_end = 7;
+}
+
+message AggregatedCategoryScoresRequest {
+  google.protobuf.Timestamp start_date = 1;
+  google.protobuf.Timestamp end_date = 2;
+}
+
+message ScoresByTicketRequest {
+  google.protobuf.Timestamp start_date = 1;
+  google.protobuf.Timestamp end_date = 2;
+}
+
+message OverallQualityScoreRequest {
+  google.protobuf.Timestamp start_date = 1;
+  google.protobuf.Timestamp end_date = 2;
+}
+
+message PeriodOverPeriodChangeRequest {
+  google.protobuf.Timestamp current_start = 1;
+  google.protobuf.Timestamp current_end = 2;
+  google.protobuf.Timestamp previous_start = 3;
+  google.protobuf.Timestamp previous_end = 4;
+}
+
+service AnalyticsService {
+  rpc GetAggregatedCategoryScores(AggregatedCategoryScoresRequest) returns (DailyAggregatedScoresResponse);
+  rpc GetScoresByTicket(ScoresByTicketRequest) returns (ScoresByTicketResponse);
+  rpc GetOverallQualityScore(OverallQualityScoreRequest) returns (OverallQualityScoreResponse);
+  rpc GetPeriodOverPeriodChange(PeriodOverPeriodChangeRequest) returns (PeriodOverPeriodChangeResponse);
+}

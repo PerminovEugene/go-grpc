@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  grpc-server:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "50051:50051"
+    env_file:
+      - .env
+    environment:
+      DB_PATH: ${DB_PATH:-./database.db}
+      GRPC_PORT: ${GRPC_PORT:-50051}
+    restart: unless-stopped
+    container_name: go-grpc-server
+
