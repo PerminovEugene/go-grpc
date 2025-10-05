@@ -1,4 +1,4 @@
-.PHONY: proto build run clean test test-watch
+.PHONY: proto build build-debug debug run clean test test-watch install-delve
 
 # Generate protobuf code
 SHELL := bash
@@ -20,17 +20,38 @@ proto:
 build:
 	go build -o bin/server main.go
 
+# Build with debug symbols for delve
+build-debug:
+	go build -gcflags="all=-N -l" -o bin/server-debug main.go
+
 # Build the client
 build-client:
-	go build -o bin/client client
+	go build -o bin/category_scores_client ./client/category_scores_client.go
 
 # Run the server
 run:
 	go run main.go
 
-# Run the client (make sure server is running first)
+# Run the server with delve debugger (headless mode, connect with VSCode)
+# Usage: make debug [PORT=2345]
+debug:
+	@echo "Starting delve debugger on port $(or $(PORT),2345)..."
+	@echo "Attach VSCode debugger or use: dlv connect localhost:$(or $(PORT),2345)"
+	dlv debug main.go --headless --listen=:$(or $(PORT),2345) --api-version=2 --accept-multiclient
+
+# Run the category scores client (make sure server is running first)
+# Usage: make run-client START=2025-01-01 END=2025-01-31
+# Or: make run-client (uses default last 30 days)
 run-client:
-	go run client
+	@if [ -z "$(START)" ] && [ -z "$(END)" ]; then \
+		go run ./client/category_scores_client.go; \
+	elif [ -z "$(START)" ] || [ -z "$(END)" ]; then \
+		echo "Error: Both START and END must be provided together"; \
+		echo "Usage: make run-client START=2025-01-01 END=2025-01-31"; \
+		exit 1; \
+	else \
+		go run ./client/category_scores_client.go -start $(START) -end $(END); \
+	fi
 
 # Clean build artifacts
 clean:
@@ -45,6 +66,10 @@ deps:
 install-protoc:
 	go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
 	go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
+
+# Install delve debugger
+install-delve:
+	go install github.com/go-delve/delve/cmd/dlv@latest
 
 # Run tests
 test:

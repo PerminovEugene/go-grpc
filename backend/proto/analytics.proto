@@ -5,6 +5,7 @@ package analytics;
 option go_package = "go-grpc-backend/proto";
 
 import "google/protobuf/timestamp.proto";
+import "category_score.proto";
 
 message RatingCategory {
   int32 id = 1;
@@ -86,7 +87,7 @@ message PeriodOverPeriodChangeRequest {
 }
 
 service AnalyticsService {
-  rpc GetAggregatedCategoryScores(AggregatedCategoryScoresRequest) returns (DailyAggregatedScoresResponse);
+  rpc GetAggregatedCategoryScores(AggregatedCategoryScoresRequest) returns (AggregatedCategoryScoresResponse);
   rpc GetScoresByTicket(ScoresByTicketRequest) returns (ScoresByTicketResponse);
   rpc GetOverallQualityScore(OverallQualityScoreRequest) returns (OverallQualityScoreResponse);
   rpc GetPeriodOverPeriodChange(PeriodOverPeriodChangeRequest) returns (PeriodOverPeriodChangeResponse);

@@ -29,7 +29,7 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type AnalyticsServiceClient interface {
-	GetAggregatedCategoryScores(ctx context.Context, in *AggregatedCategoryScoresRequest, opts ...grpc.CallOption) (*DailyAggregatedScoresResponse, error)
+	GetAggregatedCategoryScores(ctx context.Context, in *AggregatedCategoryScoresRequest, opts ...grpc.CallOption) (*AggregatedCategoryScoresResponse, error)
 	GetScoresByTicket(ctx context.Context, in *ScoresByTicketRequest, opts ...grpc.CallOption) (*ScoresByTicketResponse, error)
 	GetOverallQualityScore(ctx context.Context, in *OverallQualityScoreRequest, opts ...grpc.CallOption) (*OverallQualityScoreResponse, error)
 	GetPeriodOverPeriodChange(ctx context.Context, in *PeriodOverPeriodChangeRequest, opts ...grpc.CallOption) (*PeriodOverPeriodChangeResponse, error)
@@ -43,9 +43,9 @@ func NewAnalyticsServiceClient(cc grpc.ClientConnInterface) AnalyticsServiceClie
 	return &analyticsServiceClient{cc}
 }
 
-func (c *analyticsServiceClient) GetAggregatedCategoryScores(ctx context.Context, in *AggregatedCategoryScoresRequest, opts ...grpc.CallOption) (*DailyAggregatedScoresResponse, error) {
+func (c *analyticsServiceClient) GetAggregatedCategoryScores(ctx context.Context, in *AggregatedCategoryScoresRequest, opts ...grpc.CallOption) (*AggregatedCategoryScoresResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(DailyAggregatedScoresResponse)
+	out := new(AggregatedCategoryScoresResponse)
 	err := c.cc.Invoke(ctx, AnalyticsService_GetAggregatedCategoryScores_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -87,7 +87,7 @@ func (c *analyticsServiceClient) GetPeriodOverPeriodChange(ctx context.Context, 
 // All implementations must embed UnimplementedAnalyticsServiceServer
 // for forward compatibility.
 type AnalyticsServiceServer interface {
-	GetAggregatedCategoryScores(context.Context, *AggregatedCategoryScoresRequest) (*DailyAggregatedScoresResponse, error)
+	GetAggregatedCategoryScores(context.Context, *AggregatedCategoryScoresRequest) (*AggregatedCategoryScoresResponse, error)
 	GetScoresByTicket(context.Context, *ScoresByTicketRequest) (*ScoresByTicketResponse, error)
 	GetOverallQualityScore(context.Context, *OverallQualityScoreRequest) (*OverallQualityScoreResponse, error)
 	GetPeriodOverPeriodChange(context.Context, *PeriodOverPeriodChangeRequest) (*PeriodOverPeriodChangeResponse, error)
@@ -101,7 +101,7 @@ type AnalyticsServiceServer interface {
 // pointer dereference when methods are called.
 type UnimplementedAnalyticsServiceServer struct{}
 
-func (UnimplementedAnalyticsServiceServer) GetAggregatedCategoryScores(context.Context, *AggregatedCategoryScoresRequest) (*DailyAggregatedScoresResponse, error) {
+func (UnimplementedAnalyticsServiceServer) GetAggregatedCategoryScores(context.Context, *AggregatedCategoryScoresRequest) (*AggregatedCategoryScoresResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetAggregatedCategoryScores not implemented")
 }
 func (UnimplementedAnalyticsServiceServer) GetScoresByTicket(context.Context, *ScoresByTicketRequest) (*ScoresByTicketResponse, error) {

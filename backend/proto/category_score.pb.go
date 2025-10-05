@@ -138,7 +138,6 @@ type CategorySeries struct {
 	CategoryName       string                 `protobuf:"bytes,2,opt,name=category_name,json=categoryName,proto3" json:"category_name,omitempty"`
 	CategoryTotalCount int32                  `protobuf:"varint,3,opt,name=category_total_count,json=categoryTotalCount,proto3" json:"category_total_count,omitempty"`
 	Scores             []*ScorePoint          `protobuf:"bytes,4,rep,name=scores,proto3" json:"scores,omitempty"`
-	PeriodScore        *wrapperspb.FloatValue `protobuf:"bytes,5,opt,name=period_score,json=periodScore,proto3" json:"period_score,omitempty"`
 	unknownFields      protoimpl.UnknownFields
 	sizeCache          protoimpl.SizeCache
 }
@@ -197,13 +196,6 @@ func (x *CategorySeries) GetCategoryTotalCount() int32 {
 func (x *CategorySeries) GetScores() []*ScorePoint {
 	if x != nil {
 		return x.Scores
-	}
-	return nil
-}
-
-func (x *CategorySeries) GetPeriodScore() *wrapperspb.FloatValue {
-	if x != nil {
-		return x.PeriodScore
 	}
 	return nil
 }
@@ -329,14 +321,13 @@ const file_category_score_proto_rawDesc = "" +
 	"ScorePoint\x12.\n" +
 	"\x04date\x18\x01 \x01(\v2\x1a.google.protobuf.TimestampR\x04date\x12\x14\n" +
 	"\x05score\x18\x02 \x01(\x02R\x05score\x121\n" +
-	"\x05count\x18\x03 \x01(\v2\x1b.google.protobuf.Int32ValueR\x05count\"\xf7\x01\n" +
+	"\x05count\x18\x03 \x01(\v2\x1b.google.protobuf.Int32ValueR\x05count\"\xb7\x01\n" +
 	"\x0eCategorySeries\x12\x1f\n" +
 	"\vcategory_id\x18\x01 \x01(\x05R\n" +
 	"categoryId\x12#\n" +
 	"\rcategory_name\x18\x02 \x01(\tR\fcategoryName\x120\n" +
 	"\x14category_total_count\x18\x03 \x01(\x05R\x12categoryTotalCount\x12-\n" +
-	"\x06scores\x18\x04 \x03(\v2\x15.analytics.ScorePointR\x06scores\x12>\n" +
-	"\fperiod_score\x18\x05 \x01(\v2\x1b.google.protobuf.FloatValueR\vperiodScore\"m\n" +
+	"\x06scores\x18\x04 \x03(\v2\x15.analytics.ScorePointR\x06scores\"m\n" +
 	"\vBucketRange\x120\n" +
 	"\x05start\x18\x01 \x01(\v2\x1a.google.protobuf.TimestampR\x05start\x12,\n" +
 	"\x03end\x18\x02 \x01(\v2\x1a.google.protobuf.TimestampR\x03end\"\xd2\x01\n" +
@@ -373,23 +364,21 @@ var file_category_score_proto_goTypes = []any{
 	(*AggregatedCategoryScoresResponse)(nil), // 4: analytics.AggregatedCategoryScoresResponse
 	(*timestamppb.Timestamp)(nil),            // 5: google.protobuf.Timestamp
 	(*wrapperspb.Int32Value)(nil),            // 6: google.protobuf.Int32Value
-	(*wrapperspb.FloatValue)(nil),            // 7: google.protobuf.FloatValue
 }
 var file_category_score_proto_depIdxs = []int32{
 	5, // 0: analytics.ScorePoint.date:type_name -> google.protobuf.Timestamp
 	6, // 1: analytics.ScorePoint.count:type_name -> google.protobuf.Int32Value
 	1, // 2: analytics.CategorySeries.scores:type_name -> analytics.ScorePoint
-	7, // 3: analytics.CategorySeries.period_score:type_name -> google.protobuf.FloatValue
-	5, // 4: analytics.BucketRange.start:type_name -> google.protobuf.Timestamp
-	5, // 5: analytics.BucketRange.end:type_name -> google.protobuf.Timestamp
-	0, // 6: analytics.AggregatedCategoryScoresResponse.granularity:type_name -> analytics.Granularity
-	3, // 7: analytics.AggregatedCategoryScoresResponse.bucket_range:type_name -> analytics.BucketRange
-	2, // 8: analytics.AggregatedCategoryScoresResponse.categories:type_name -> analytics.CategorySeries
-	9, // [9:9] is the sub-list for method output_type
-	9, // [9:9] is the sub-list for method input_type
-	9, // [9:9] is the sub-list for extension type_name
-	9, // [9:9] is the sub-list for extension extendee
-	0, // [0:9] is the sub-list for field type_name
+	5, // 3: analytics.BucketRange.start:type_name -> google.protobuf.Timestamp
+	5, // 4: analytics.BucketRange.end:type_name -> google.protobuf.Timestamp
+	0, // 5: analytics.AggregatedCategoryScoresResponse.granularity:type_name -> analytics.Granularity
+	3, // 6: analytics.AggregatedCategoryScoresResponse.bucket_range:type_name -> analytics.BucketRange
+	2, // 7: analytics.AggregatedCategoryScoresResponse.categories:type_name -> analytics.CategorySeries
+	8, // [8:8] is the sub-list for method output_type
+	8, // [8:8] is the sub-list for method input_type
+	8, // [8:8] is the sub-list for extension type_name
+	8, // [8:8] is the sub-list for extension extendee
+	0, // [0:8] is the sub-list for field type_name
 }
 
 func init() { file_category_score_proto_init() }

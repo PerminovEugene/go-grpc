@@ -802,7 +802,7 @@ var File_analytics_proto protoreflect.FileDescriptor
 
 const file_analytics_proto_rawDesc = "" +
 	"\n" +
-	"\x0fanalytics.proto\x12\tanalytics\x1a\x1fgoogle/protobuf/timestamp.proto\"L\n" +
+	"\x0fanalytics.proto\x12\tanalytics\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x14category_score.proto\"L\n" +
 	"\x0eRatingCategory\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x05R\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x16\n" +
@@ -868,9 +868,9 @@ const file_analytics_proto_rawDesc = "" +
 	"\vcurrent_end\x18\x02 \x01(\v2\x1a.google.protobuf.TimestampR\n" +
 	"currentEnd\x12A\n" +
 	"\x0eprevious_start\x18\x03 \x01(\v2\x1a.google.protobuf.TimestampR\rpreviousStart\x12=\n" +
-	"\fprevious_end\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\vpreviousEnd2\xbc\x03\n" +
-	"\x10AnalyticsService\x12s\n" +
-	"\x1bGetAggregatedCategoryScores\x12*.analytics.AggregatedCategoryScoresRequest\x1a(.analytics.DailyAggregatedScoresResponse\x12X\n" +
+	"\fprevious_end\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\vpreviousEnd2\xbf\x03\n" +
+	"\x10AnalyticsService\x12v\n" +
+	"\x1bGetAggregatedCategoryScores\x12*.analytics.AggregatedCategoryScoresRequest\x1a+.analytics.AggregatedCategoryScoresResponse\x12X\n" +
 	"\x11GetScoresByTicket\x12 .analytics.ScoresByTicketRequest\x1a!.analytics.ScoresByTicketResponse\x12g\n" +
 	"\x16GetOverallQualityScore\x12%.analytics.OverallQualityScoreRequest\x1a&.analytics.OverallQualityScoreResponse\x12p\n" +
 	"\x19GetPeriodOverPeriodChange\x12(.analytics.PeriodOverPeriodChangeRequest\x1a).analytics.PeriodOverPeriodChangeResponseB\x17Z\x15go-grpc-backend/protob\x06proto3"
@@ -889,19 +889,20 @@ func file_analytics_proto_rawDescGZIP() []byte {
 
 var file_analytics_proto_msgTypes = make([]protoimpl.MessageInfo, 12)
 var file_analytics_proto_goTypes = []any{
-	(*RatingCategory)(nil),                  // 0: analytics.RatingCategory
-	(*CategoryScore)(nil),                   // 1: analytics.CategoryScore
-	(*DailyAggregatedScoresResponse)(nil),   // 2: analytics.DailyAggregatedScoresResponse
-	(*WeeklyAggregatedScoresResponse)(nil),  // 3: analytics.WeeklyAggregatedScoresResponse
-	(*TicketCategoryScore)(nil),             // 4: analytics.TicketCategoryScore
-	(*ScoresByTicketResponse)(nil),          // 5: analytics.ScoresByTicketResponse
-	(*OverallQualityScoreResponse)(nil),     // 6: analytics.OverallQualityScoreResponse
-	(*PeriodOverPeriodChangeResponse)(nil),  // 7: analytics.PeriodOverPeriodChangeResponse
-	(*AggregatedCategoryScoresRequest)(nil), // 8: analytics.AggregatedCategoryScoresRequest
-	(*ScoresByTicketRequest)(nil),           // 9: analytics.ScoresByTicketRequest
-	(*OverallQualityScoreRequest)(nil),      // 10: analytics.OverallQualityScoreRequest
-	(*PeriodOverPeriodChangeRequest)(nil),   // 11: analytics.PeriodOverPeriodChangeRequest
-	(*timestamppb.Timestamp)(nil),           // 12: google.protobuf.Timestamp
+	(*RatingCategory)(nil),                   // 0: analytics.RatingCategory
+	(*CategoryScore)(nil),                    // 1: analytics.CategoryScore
+	(*DailyAggregatedScoresResponse)(nil),    // 2: analytics.DailyAggregatedScoresResponse
+	(*WeeklyAggregatedScoresResponse)(nil),   // 3: analytics.WeeklyAggregatedScoresResponse
+	(*TicketCategoryScore)(nil),              // 4: analytics.TicketCategoryScore
+	(*ScoresByTicketResponse)(nil),           // 5: analytics.ScoresByTicketResponse
+	(*OverallQualityScoreResponse)(nil),      // 6: analytics.OverallQualityScoreResponse
+	(*PeriodOverPeriodChangeResponse)(nil),   // 7: analytics.PeriodOverPeriodChangeResponse
+	(*AggregatedCategoryScoresRequest)(nil),  // 8: analytics.AggregatedCategoryScoresRequest
+	(*ScoresByTicketRequest)(nil),            // 9: analytics.ScoresByTicketRequest
+	(*OverallQualityScoreRequest)(nil),       // 10: analytics.OverallQualityScoreRequest
+	(*PeriodOverPeriodChangeRequest)(nil),    // 11: analytics.PeriodOverPeriodChangeRequest
+	(*timestamppb.Timestamp)(nil),            // 12: google.protobuf.Timestamp
+	(*AggregatedCategoryScoresResponse)(nil), // 13: analytics.AggregatedCategoryScoresResponse
 }
 var file_analytics_proto_depIdxs = []int32{
 	12, // 0: analytics.CategoryScore.date:type_name -> google.protobuf.Timestamp
@@ -934,7 +935,7 @@ var file_analytics_proto_depIdxs = []int32{
 	9,  // 27: analytics.AnalyticsService.GetScoresByTicket:input_type -> analytics.ScoresByTicketRequest
 	10, // 28: analytics.AnalyticsService.GetOverallQualityScore:input_type -> analytics.OverallQualityScoreRequest
 	11, // 29: analytics.AnalyticsService.GetPeriodOverPeriodChange:input_type -> analytics.PeriodOverPeriodChangeRequest
-	2,  // 30: analytics.AnalyticsService.GetAggregatedCategoryScores:output_type -> analytics.DailyAggregatedScoresResponse
+	13, // 30: analytics.AnalyticsService.GetAggregatedCategoryScores:output_type -> analytics.AggregatedCategoryScoresResponse
 	5,  // 31: analytics.AnalyticsService.GetScoresByTicket:output_type -> analytics.ScoresByTicketResponse
 	6,  // 32: analytics.AnalyticsService.GetOverallQualityScore:output_type -> analytics.OverallQualityScoreResponse
 	7,  // 33: analytics.AnalyticsService.GetPeriodOverPeriodChange:output_type -> analytics.PeriodOverPeriodChangeResponse
@@ -950,6 +951,7 @@ func file_analytics_proto_init() {
 	if File_analytics_proto != nil {
 		return
 	}
+	file_category_score_proto_init()
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{

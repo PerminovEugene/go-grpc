@@ -24,8 +24,8 @@ func (r *AnalyticsRepository) GetWeeklyAggregatedCategoryRatings(
 		SELECT
 			rc.id AS category_id,
 			rc.name AS category_name,
-			rc.weight as category_weight
-			AVG(r.rating) * 20.0 AS avg_percent,
+			rc.weight as category_weight,
+			AVG(r.rating) AS avg_percent,
 			COUNT(r.id) AS rating_count,
 			date(r.created_at, 'weekday 1', '-7 days') AS bucket_week_start,
 			COUNT(*) OVER (PARTITION BY rc.id) AS ratings_total
@@ -53,10 +53,11 @@ func (r *AnalyticsRepository) GetWeeklyAggregatedCategoryRatings(
 		if err := rows.Scan(
 			&score.CategoryID,
 			&score.CategoryName,
-			&score.AvgPercent, 
+			&score.CategoryWeight,
+			&score.AvgPercent,
 			&score.RatingCount,
-			&bucketStr, 
-			&score.RatingsTotalCount, 
+			&bucketStr,
+			&score.RatingsTotalCount,
 		); err != nil {
 			return nil, fmt.Errorf("scan weekly category score: %w", err)
 		}
@@ -65,7 +66,7 @@ func (r *AnalyticsRepository) GetWeeklyAggregatedCategoryRatings(
 		if err != nil {
 			return nil, fmt.Errorf("parse week start %q: %w", bucketStr, err)
 		}
-		score.Date = t 
+		score.Date = t
 
 		ratings = append(ratings, score)
 	}
@@ -78,49 +79,60 @@ func (r *AnalyticsRepository) GetWeeklyAggregatedCategoryRatings(
 }
 
 func (r *AnalyticsRepository) GetDailyAggregatedCategoryRatings(startDate, endDate time.Time) ([]models.CategoryRatingOverTimePeriod, error) {
-	query := `
+	const query = `
 		SELECT 
-			rc.id as category_id,
-			rc.name as category_name,
-			rc.weight as category_weight
-			AVG(r.rating) as avg_score,
-			COUNT(r.id) as rating_count,
-			DATE(r.created_at, 'weekday 0', '-6 days') as week_start
+			rc.id    AS category_id,
+			rc.name  AS category_name,
+			rc.weight AS category_weight,
+			AVG(r.rating) AS avg_percent,
+			COUNT(r.id) AS rating_count,
+			strftime('%Y-%m-%d', r.created_at) AS day,
+			COUNT(*) OVER (PARTITION BY rc.id) AS ratings_total
 		FROM ratings r
 		JOIN rating_categories rc ON r.rating_category_id = rc.id
-		WHERE r.created_at >= ? AND r.created_at <= ?
-		GROUP BY rc.id, rc.name, week_start
-		ORDER BY rc.name, week_start
+		WHERE r.created_at >= ? AND r.created_at < ?
+		GROUP BY rc.id, rc.name, rc.weight, day
+		ORDER BY rc.name, day;
 	`
 
 	rows, err := r.db.Query(query, startDate, endDate)
 	if err != nil {
-		return nil, fmt.Errorf("failed to query weekly aggregated category scores: %v", err)
+		return nil, fmt.Errorf("failed to query daily aggregated category scores: %w", err)
 	}
 	defer rows.Close()
 
-	var scores []models.CategoryRatingOverTimePeriod
+	var out []models.CategoryRatingOverTimePeriod
 	for rows.Next() {
-		var score models.CategoryRatingOverTimePeriod
-		var weekStart time.Time
-
-		err := rows.Scan(
-			&score.CategoryID,
-			&score.CategoryName,
-			&score.AvgPercent,
-			&score.RatingCount,
-			&weekStart,
-			&score.RatingsTotalCount,
+		var (
+			item  models.CategoryRatingOverTimePeriod
+			day   string // <- строка "YYYY-MM-DD"
 		)
-		if err != nil {
-			return nil, fmt.Errorf("failed to scan weekly category score: %v", err)
+
+		if err := rows.Scan(
+			&item.CategoryID,
+			&item.CategoryName,
+			&item.CategoryWeight,
+			&item.AvgPercent,
+			&item.RatingCount,
+			&day,
+			&item.RatingsTotalCount,
+		); err != nil {
+			return nil, fmt.Errorf("failed to scan daily category score: %w", err)
 		}
 
-		score.Date = weekStart
-		scores = append(scores, score)
-	}
+		// Парсим "YYYY-MM-DD" в time.Time (UTC полночь)
+		t, err := time.ParseInLocation("2006-01-02", day, time.UTC)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse day %q: %w", day, err)
+		}
+		item.Date = t
 
-	return scores, nil
+		out = append(out, item)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
 func (r *AnalyticsRepository) GetScoresByTicket(startDate, endDate time.Time) ([]models.TicketCategoryScore, error) {
