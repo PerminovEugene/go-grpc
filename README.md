@@ -1,4 +1,4 @@
-# Analytics gRPC Server 
+# Analytics gRPC Server
 
 A gRPC server that provides analytics services for ticket rating data.
 
@@ -7,6 +7,7 @@ Database file is located in root of `./backend` folder.
 ## Grpc Service stack
 
 ### Prerequisites
+
 - Go 1.21+
 - Protocol Buffers compiler (protoc)
 - SQLite3
@@ -19,7 +20,17 @@ Database file is located in root of `./backend` folder.
 
 ## Testing
 
-1. TODO 
+### Run tests once
+
+```bash
+make test
+```
+
+### Run tests in watch mode
+
+```bash
+make test-watch
+```
 
 ## Production
 
@@ -28,6 +39,7 @@ Database file is located in root of `./backend` folder.
 ## Database
 
 The server uses SQLite with these tables:
+
 - `tickets` - Ticket information
 - `rating_categories` - Categories (Tone, Grammar, etc.)
 - `ratings` - Individual ratings with category, reviewer, reviewee
@@ -36,13 +48,17 @@ The server uses SQLite with these tables:
 ## API
 
 ### GetAggregatedCategoryScores
+
 Returns daily aggregates for periods ≤ 1 month, weekly for longer periods.
 
 ### GetScoresByTicket
+
 Returns scores grouped by ticket within a period.
 
 ### GetOverallQualityScore
+
 Returns overall quality score for a period.
 
 ### GetPeriodOverPeriodChange
+
 Compares two periods and shows percentage change.

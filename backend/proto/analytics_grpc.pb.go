@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.5.1
 // - protoc             v5.29.3
-// source: proto/analytics.proto
+// source: analytics.proto
 
 package proto
 
@@ -19,26 +19,19 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	AnalyticsService_GetAggregatedCategoryScores_FullMethodName = "/proto.AnalyticsService/GetAggregatedCategoryScores"
-	AnalyticsService_GetScoresByTicket_FullMethodName           = "/proto.AnalyticsService/GetScoresByTicket"
-	AnalyticsService_GetOverallQualityScore_FullMethodName      = "/proto.AnalyticsService/GetOverallQualityScore"
-	AnalyticsService_GetPeriodOverPeriodChange_FullMethodName   = "/proto.AnalyticsService/GetPeriodOverPeriodChange"
+	AnalyticsService_GetAggregatedCategoryScores_FullMethodName = "/analytics.AnalyticsService/GetAggregatedCategoryScores"
+	AnalyticsService_GetScoresByTicket_FullMethodName           = "/analytics.AnalyticsService/GetScoresByTicket"
+	AnalyticsService_GetOverallQualityScore_FullMethodName      = "/analytics.AnalyticsService/GetOverallQualityScore"
+	AnalyticsService_GetPeriodOverPeriodChange_FullMethodName   = "/analytics.AnalyticsService/GetPeriodOverPeriodChange"
 )
 
 // AnalyticsServiceClient is the client API for AnalyticsService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-//
-// Analytics service definition
 type AnalyticsServiceClient interface {
-	// Get aggregated category scores over a period of time
-	// Returns daily aggregates for periods <= 1 month, weekly for longer periods
 	GetAggregatedCategoryScores(ctx context.Context, in *AggregatedCategoryScoresRequest, opts ...grpc.CallOption) (*DailyAggregatedScoresResponse, error)
-	// Get scores by ticket within a defined period
 	GetScoresByTicket(ctx context.Context, in *ScoresByTicketRequest, opts ...grpc.CallOption) (*ScoresByTicketResponse, error)
-	// Get overall quality score for a period
 	GetOverallQualityScore(ctx context.Context, in *OverallQualityScoreRequest, opts ...grpc.CallOption) (*OverallQualityScoreResponse, error)
-	// Get period over period score change
 	GetPeriodOverPeriodChange(ctx context.Context, in *PeriodOverPeriodChangeRequest, opts ...grpc.CallOption) (*PeriodOverPeriodChangeResponse, error)
 }
 
@@ -93,17 +86,10 @@ func (c *analyticsServiceClient) GetPeriodOverPeriodChange(ctx context.Context, 
 // AnalyticsServiceServer is the server API for AnalyticsService service.
 // All implementations must embed UnimplementedAnalyticsServiceServer
 // for forward compatibility.
-//
-// Analytics service definition
 type AnalyticsServiceServer interface {
-	// Get aggregated category scores over a period of time
-	// Returns daily aggregates for periods <= 1 month, weekly for longer periods
 	GetAggregatedCategoryScores(context.Context, *AggregatedCategoryScoresRequest) (*DailyAggregatedScoresResponse, error)
-	// Get scores by ticket within a defined period
 	GetScoresByTicket(context.Context, *ScoresByTicketRequest) (*ScoresByTicketResponse, error)
-	// Get overall quality score for a period
 	GetOverallQualityScore(context.Context, *OverallQualityScoreRequest) (*OverallQualityScoreResponse, error)
-	// Get period over period score change
 	GetPeriodOverPeriodChange(context.Context, *PeriodOverPeriodChangeRequest) (*PeriodOverPeriodChangeResponse, error)
 	mustEmbedUnimplementedAnalyticsServiceServer()
 }
@@ -224,7 +210,7 @@ func _AnalyticsService_GetPeriodOverPeriodChange_Handler(srv interface{}, ctx co
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var AnalyticsService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "proto.AnalyticsService",
+	ServiceName: "analytics.AnalyticsService",
 	HandlerType: (*AnalyticsServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
@@ -245,5 +231,5 @@ var AnalyticsService_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "proto/analytics.proto",
+	Metadata: "analytics.proto",
 }

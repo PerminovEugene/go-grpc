@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package proto;
+package analytics;
 
 option go_package = "go-grpc-backend/proto";
 

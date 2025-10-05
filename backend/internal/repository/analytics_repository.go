@@ -16,55 +16,73 @@ func NewAnalyticsRepository(db *sql.DB) *AnalyticsRepository {
 	return &AnalyticsRepository{db: db}
 }
 
-func (r *AnalyticsRepository) GetAggregatedCategoryScores(startDate, endDate time.Time) ([]models.CategoryScore, error) {
-	query := `
-		SELECT 
-			rc.id as category_id,
-			rc.name as category_name,
-			AVG(r.rating) as avg_score,
-			COUNT(r.id) as rating_count,
-			DATE(r.created_at) as rating_date
+func (r *AnalyticsRepository) GetWeeklyAggregatedCategoryRatings(
+	startDate, endDate time.Time,
+) ([]models.CategoryRatingOverTimePeriod, error) {
+
+	const query = `
+		SELECT
+			rc.id AS category_id,
+			rc.name AS category_name,
+			rc.weight as category_weight
+			AVG(r.rating) * 20.0 AS avg_percent,
+			COUNT(r.id) AS rating_count,
+			date(r.created_at, 'weekday 1', '-7 days') AS bucket_week_start,
+			COUNT(*) OVER (PARTITION BY rc.id) AS ratings_total
 		FROM ratings r
-		JOIN rating_categories rc ON r.rating_category_id = rc.id
-		WHERE r.created_at >= ? AND r.created_at <= ?
-		GROUP BY rc.id, rc.name, DATE(r.created_at)
-		ORDER BY rc.name, rating_date
+		JOIN rating_categories rc ON rc.id = r.rating_category_id
+		WHERE r.created_at >= ? AND r.created_at < ?
+		GROUP BY rc.id, rc.name, bucket_week_start
+		ORDER BY rc.name, bucket_week_start;
 	`
 
 	rows, err := r.db.Query(query, startDate, endDate)
 	if err != nil {
-		return nil, fmt.Errorf("failed to query aggregated category scores: %v", err)
+		return nil, fmt.Errorf("query weekly aggregated category rating: %w", err)
 	}
 	defer rows.Close()
 
-	var scores []models.CategoryScore
-	for rows.Next() {
-		var score models.CategoryScore
-		var ratingDate time.Time
+	ratings := make([]models.CategoryRatingOverTimePeriod, 0, 128)
 
-		err := rows.Scan(
+	for rows.Next() {
+		var (
+			score     models.CategoryRatingOverTimePeriod
+			bucketStr string
+		)
+
+		if err := rows.Scan(
 			&score.CategoryID,
 			&score.CategoryName,
-			&score.Score,
+			&score.AvgPercent, 
 			&score.RatingCount,
-			&ratingDate,
-		)
-		if err != nil {
-			return nil, fmt.Errorf("failed to scan category score: %v", err)
+			&bucketStr, 
+			&score.RatingsTotalCount, 
+		); err != nil {
+			return nil, fmt.Errorf("scan weekly category score: %w", err)
 		}
 
-		score.Date = ratingDate
-		scores = append(scores, score)
+		t, err := time.Parse("2006-01-02", bucketStr)
+		if err != nil {
+			return nil, fmt.Errorf("parse week start %q: %w", bucketStr, err)
+		}
+		score.Date = t 
+
+		ratings = append(ratings, score)
 	}
 
-	return scores, nil
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("rows error: %w", err)
+	}
+
+	return ratings, nil
 }
 
-func (r *AnalyticsRepository) GetWeeklyAggregatedCategoryScores(startDate, endDate time.Time) ([]models.CategoryScore, error) {
+func (r *AnalyticsRepository) GetDailyAggregatedCategoryRatings(startDate, endDate time.Time) ([]models.CategoryRatingOverTimePeriod, error) {
 	query := `
 		SELECT 
 			rc.id as category_id,
 			rc.name as category_name,
+			rc.weight as category_weight
 			AVG(r.rating) as avg_score,
 			COUNT(r.id) as rating_count,
 			DATE(r.created_at, 'weekday 0', '-6 days') as week_start
@@ -81,17 +99,18 @@ func (r *AnalyticsRepository) GetWeeklyAggregatedCategoryScores(startDate, endDa
 	}
 	defer rows.Close()
 
-	var scores []models.CategoryScore
+	var scores []models.CategoryRatingOverTimePeriod
 	for rows.Next() {
-		var score models.CategoryScore
+		var score models.CategoryRatingOverTimePeriod
 		var weekStart time.Time
 
 		err := rows.Scan(
 			&score.CategoryID,
 			&score.CategoryName,
-			&score.Score,
+			&score.AvgPercent,
 			&score.RatingCount,
 			&weekStart,
+			&score.RatingsTotalCount,
 		)
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan weekly category score: %v", err)

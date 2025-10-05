@@ -3,49 +3,53 @@ package repository
 import (
 	"database/sql"
 	"testing"
+	"time"
 )
 
-func TestAnalyticsRepository_CalculateScore(t *testing.T) {
-	// Create a mock database connection (nil is fine for this simple test)
+func TestAnalyticsRepository_NewAnalyticsRepository(t *testing.T) {
+	// Test repository creation
 	var db *sql.DB
 	repo := NewAnalyticsRepository(db)
 
-	// Test the CalculateScore function
-	score := repo.CalculateScore()
+	// Verify that the repository is created correctly
+	if repo == nil {
+		t.Error("NewAnalyticsRepository() should not return nil")
+	}
 
-	// Verify that the function returns the expected hardcoded value
-	expectedScore := 1.0
-	if score != expectedScore {
-		t.Errorf("CalculateScore() = %v, want %v", score, expectedScore)
+	if repo.db != db {
+		t.Error("NewAnalyticsRepository() should store the database connection")
 	}
 }
 
-func TestAnalyticsRepository_CalculateScore_Type(t *testing.T) {
-	// Create a mock database connection
+func TestAnalyticsRepository_GetRatingCategories_ErrorHandling(t *testing.T) {
+	// Test with nil database connection
 	var db *sql.DB
 	repo := NewAnalyticsRepository(db)
 
-	// Test that the function returns a float64
-	score := repo.CalculateScore()
+	// This will panic with nil database, so we expect a panic
+	defer func() {
+		if r := recover(); r == nil {
+			t.Error("GetRatingCategories() with nil database should panic")
+		}
+	}()
 
-	// Verify the type is float64
-	if _, ok := interface{}(score).(float64); !ok {
-		t.Errorf("CalculateScore() should return float64, got %T", score)
-	}
+	repo.GetRatingCategories()
 }
 
-func TestAnalyticsRepository_CalculateScore_Consistency(t *testing.T) {
-	// Create a mock database connection
+func TestAnalyticsRepository_GetOverallQualityScore_ErrorHandling(t *testing.T) {
+	// Test with nil database connection
 	var db *sql.DB
 	repo := NewAnalyticsRepository(db)
 
-	// Test multiple calls to ensure consistency
-	score1 := repo.CalculateScore()
-	score2 := repo.CalculateScore()
-	score3 := repo.CalculateScore()
+	startDate := time.Now().AddDate(0, 0, -7)
+	endDate := time.Now()
 
-	// All calls should return the same value
-	if score1 != score2 || score2 != score3 {
-		t.Errorf("CalculateScore() should return consistent values, got %v, %v, %v", score1, score2, score3)
-	}
+	// This will panic with nil database, so we expect a panic
+	defer func() {
+		if r := recover(); r == nil {
+			t.Error("GetOverallQualityScore() with nil database should panic")
+		}
+	}()
+
+	repo.GetOverallQualityScore(startDate, endDate)
 }

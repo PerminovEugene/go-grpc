@@ -1,10 +1,20 @@
-.PHONY: proto build run clean
+.PHONY: proto build run clean test test-watch
 
 # Generate protobuf code
+SHELL := bash
+.SHELLFLAGS := -eu -o pipefail -c
+
+PROTO_DIR := proto
+
+.PHONY: proto
 proto:
-	protoc --go_out=. --go_opt=paths=source_relative \
-		--go-grpc_out=. --go-grpc_opt=paths=source_relative \
-		proto/analytics.proto
+	cd $(PROTO_DIR) && \
+	protoc -I . \
+	  --go_out=paths=source_relative:. \
+	  --go-grpc_out=paths=source_relative:. \
+	  $$(find . -name '*.proto' -print)
+
+
 
 # Build the application
 build:
@@ -35,3 +45,11 @@ deps:
 install-protoc:
 	go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
 	go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
+
+# Run tests
+test:
+	go test ./... -v
+
+# Run tests in watch mode
+test-watch:
+	go run cmd/test-watcher/main.go

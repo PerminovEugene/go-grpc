@@ -13,20 +13,3 @@ type Rating struct {
 	RevieweeID       int       `json:"reviewee_id" db:"reviewee_id"`
 	CreatedAt        time.Time `json:"created_at" db:"created_at"`
 }
-
-// type CreateRatingRequest struct {
-// 	Rating           int `json:"rating"`
-// 	TicketID         int `json:"ticket_id"`
-// 	RatingCategoryID int `json:"rating_category_id"`
-// 	ReviewerID       int `json:"reviewer_id"`
-// 	RevieweeID       int `json:"reviewee_id"`
-// }
-
-// type UpdateRatingRequest struct {
-// 	ID               int `json:"id"`
-// 	Rating           int `json:"rating"`
-// 	TicketID         int `json:"ticket_id"`
-// 	RatingCategoryID int `json:"rating_category_id"`
-// 	ReviewerID       int `json:"reviewer_id"`
-// 	RevieweeID       int `json:"reviewee_id"`
-// }
