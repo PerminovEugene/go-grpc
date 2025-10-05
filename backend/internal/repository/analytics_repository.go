@@ -104,8 +104,8 @@ func (r *AnalyticsRepository) GetDailyAggregatedCategoryRatings(startDate, endDa
 	var out []models.CategoryRatingOverTimePeriod
 	for rows.Next() {
 		var (
-			item  models.CategoryRatingOverTimePeriod
-			day   string // <- строка "YYYY-MM-DD"
+			item models.CategoryRatingOverTimePeriod
+			day  string // <- строка "YYYY-MM-DD"
 		)
 
 		if err := rows.Scan(

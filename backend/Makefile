@@ -1,4 +1,4 @@
-.PHONY: proto build build-debug debug run clean test test-watch install-delve
+.PHONY: proto build build-debug debug run clean test test-watch install-delve fmt
 
 # Generate protobuf code
 SHELL := bash
@@ -61,6 +61,11 @@ clean:
 deps:
 	go mod tidy
 	go mod download
+
+# Format Go code
+fmt:
+	go fmt ./...
+	gofmt -s -w .
 
 # Install protoc dependencies (run this first)
 install-protoc:
