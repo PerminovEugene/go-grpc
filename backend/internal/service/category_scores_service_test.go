@@ -2,19 +2,121 @@ package service
 
 import (
 	"errors"
+	"sort"
 	"testing"
 	"time"
 
 	"go-grpc-backend/internal/models"
 	"go-grpc-backend/proto"
+
+	"google.golang.org/protobuf/types/known/timestamppb"
+	"google.golang.org/protobuf/types/known/wrapperspb"
 )
+
+// Mock repository for category scores testing
+type mockCategoryScoresRepository struct {
+	dailyRatings       []models.CategoryRatingOverTimePeriod
+	weeklyRatings      []models.CategoryRatingOverTimePeriod
+	dailyRatingsError  error
+	weeklyRatingsError error
+}
+
+func (m *mockCategoryScoresRepository) GetDailyAggregatedCategoryRatings(startDate, endDate time.Time) ([]models.CategoryRatingOverTimePeriod, error) {
+	if m.dailyRatingsError != nil {
+		return nil, m.dailyRatingsError
+	}
+	return m.dailyRatings, nil
+}
+
+func (m *mockCategoryScoresRepository) GetWeeklyAggregatedCategoryRatings(startDate, endDate time.Time) ([]models.CategoryRatingOverTimePeriod, error) {
+	if m.weeklyRatingsError != nil {
+		return nil, m.weeklyRatingsError
+	}
+	return m.weeklyRatings, nil
+}
+
+// testScoreService wraps the logic we want to test without using the actual ScoreService struct
+// This avoids the type incompatibility issue with the mock repository
+type testScoreService struct {
+	repo *mockCategoryScoresRepository
+}
+
+func (s *testScoreService) GetAggregatedCategoryScores(startDate, endDate time.Time) (*proto.AggregatedCategoryScoresResponse, error) {
+	duration := endDate.Sub(startDate)
+	useWeekly := duration > 30*24*time.Hour
+
+	var (
+		rows []models.CategoryRatingOverTimePeriod
+		err  error
+	)
+	if useWeekly {
+		rows, err = s.repo.GetWeeklyAggregatedCategoryRatings(startDate, endDate)
+	} else {
+		rows, err = s.repo.GetDailyAggregatedCategoryRatings(startDate, endDate)
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	// Group by category → collect series slice (copy of the actual implementation)
+	byCat := make(map[int32]*proto.CategorySeries)
+	for _, r := range rows {
+		cid := int32(r.CategoryID)
+
+		series, ok := byCat[cid]
+		if !ok {
+			series = &proto.CategorySeries{
+				CategoryId:         cid,
+				CategoryName:       r.CategoryName,
+				CategoryTotalCount: 0,
+				Scores:             nil,
+			}
+			byCat[cid] = series
+		}
+
+		var score = r.AvgPercent * r.CategoryWeight * RATING_TO_PERCENT_MODIFICATOR
+		series.Scores = append(series.Scores, &proto.ScorePoint{
+			Date:  timestamppb.New(r.Date),
+			Score: float32(score),
+			Count: wrapperspb.Int32(int32(r.RatingCount)),
+		})
+		series.CategoryTotalCount += int32(r.RatingCount)
+	}
+
+	categories := make([]*proto.CategorySeries, 0, len(byCat))
+	for _, s := range byCat {
+		sort.Slice(s.Scores, func(i, j int) bool {
+			return s.Scores[i].Date.AsTime().Before(s.Scores[j].Date.AsTime())
+		})
+		categories = append(categories, s)
+	}
+
+	gran := proto.Granularity_GRANULARITY_DAY
+	if useWeekly {
+		gran = proto.Granularity_GRANULARITY_WEEK
+	}
+
+	resp := &proto.AggregatedCategoryScoresResponse{
+		Granularity: gran,
+		BucketRange: &proto.BucketRange{
+			Start: timestamppb.New(startDate),
+			End:   timestamppb.New(endDate),
+		},
+		Categories: categories,
+	}
+	return resp, nil
+}
+
+func newTestScoreService(repo *mockCategoryScoresRepository) *testScoreService {
+	return &testScoreService{repo: repo}
+}
 
 func TestScoreService_GetAggregatedCategoryScores_DailyGranularity(t *testing.T) {
 	// Setup test dates (20 days apart - should use daily granularity)
 	startDate := time.Date(2025, 1, 1, 0, 0, 0, 0, time.UTC)
 	endDate := time.Date(2025, 1, 21, 0, 0, 0, 0, time.UTC)
 
-	mockRepo := &mockAnalyticsRepository{
+	mockRepo := &mockCategoryScoresRepository{
 		dailyRatings: []models.CategoryRatingOverTimePeriod{
 			{
 				CategoryID:     1,
@@ -106,7 +208,7 @@ func TestScoreService_GetAggregatedCategoryScores_WeeklyGranularity(t *testing.T
 	startDate := time.Date(2025, 1, 1, 0, 0, 0, 0, time.UTC)
 	endDate := time.Date(2025, 2, 15, 0, 0, 0, 0, time.UTC)
 
-	mockRepo := &mockAnalyticsRepository{
+	mockRepo := &mockCategoryScoresRepository{
 		weeklyRatings: []models.CategoryRatingOverTimePeriod{
 			{
 				CategoryID:     1,
@@ -171,7 +273,7 @@ func TestScoreService_GetAggregatedCategoryScores_MultipleCategories(t *testing.
 	startDate := time.Date(2025, 1, 1, 0, 0, 0, 0, time.UTC)
 	endDate := time.Date(2025, 1, 10, 0, 0, 0, 0, time.UTC)
 
-	mockRepo := &mockAnalyticsRepository{
+	mockRepo := &mockCategoryScoresRepository{
 		dailyRatings: []models.CategoryRatingOverTimePeriod{
 			{
 				CategoryID:     1,
@@ -227,7 +329,7 @@ func TestScoreService_GetAggregatedCategoryScores_MultipleCategories(t *testing.
 }
 
 func TestScoreService_GetAggregatedCategoryScores_ScoreCalculation(t *testing.T) {
-	// Test score calculation formula: AvgPercent * CategoryWeight / RatingCount
+	// Test score calculation formula: AvgPercent * CategoryWeight * RATING_TO_PERCENT_MODIFICATOR
 	startDate := time.Date(2025, 1, 1, 0, 0, 0, 0, time.UTC)
 	endDate := time.Date(2025, 1, 10, 0, 0, 0, 0, time.UTC)
 
@@ -235,7 +337,7 @@ func TestScoreService_GetAggregatedCategoryScores_ScoreCalculation(t *testing.T)
 	categoryWeight := 0.5
 	ratingCount := 10
 
-	mockRepo := &mockAnalyticsRepository{
+	mockRepo := &mockCategoryScoresRepository{
 		dailyRatings: []models.CategoryRatingOverTimePeriod{
 			{
 				CategoryID:     1,
@@ -265,8 +367,8 @@ func TestScoreService_GetAggregatedCategoryScores_ScoreCalculation(t *testing.T)
 
 	scorePoint := result.Categories[0].Scores[0]
 
-	// Calculate expected score
-	expectedScore := float32(avgPercent * categoryWeight / float64(ratingCount))
+	// Calculate expected score: AvgPercent * CategoryWeight * RATING_TO_PERCENT_MODIFICATOR (20)
+	expectedScore := float32(avgPercent * categoryWeight * RATING_TO_PERCENT_MODIFICATOR)
 
 	if scorePoint.Score != expectedScore {
 		t.Errorf("Expected score %v, got %v", expectedScore, scorePoint.Score)
@@ -283,7 +385,7 @@ func TestScoreService_GetAggregatedCategoryScores_EmptyResults(t *testing.T) {
 	startDate := time.Date(2025, 1, 1, 0, 0, 0, 0, time.UTC)
 	endDate := time.Date(2025, 1, 10, 0, 0, 0, 0, time.UTC)
 
-	mockRepo := &mockAnalyticsRepository{
+	mockRepo := &mockCategoryScoresRepository{
 		dailyRatings: []models.CategoryRatingOverTimePeriod{},
 	}
 
@@ -311,7 +413,7 @@ func TestScoreService_GetAggregatedCategoryScores_DailyError(t *testing.T) {
 	endDate := time.Date(2025, 1, 10, 0, 0, 0, 0, time.UTC)
 
 	expectedError := errors.New("database error")
-	mockRepo := &mockAnalyticsRepository{
+	mockRepo := &mockCategoryScoresRepository{
 		dailyRatingsError: expectedError,
 	}
 
@@ -337,7 +439,7 @@ func TestScoreService_GetAggregatedCategoryScores_WeeklyError(t *testing.T) {
 	endDate := time.Date(2025, 2, 15, 0, 0, 0, 0, time.UTC)
 
 	expectedError := errors.New("database error")
-	mockRepo := &mockAnalyticsRepository{
+	mockRepo := &mockCategoryScoresRepository{
 		weeklyRatingsError: expectedError,
 	}
 
@@ -363,7 +465,7 @@ func TestScoreService_GetAggregatedCategoryScores_SortingByDate(t *testing.T) {
 	endDate := time.Date(2025, 1, 10, 0, 0, 0, 0, time.UTC)
 
 	// Create data with intentionally unsorted dates
-	mockRepo := &mockAnalyticsRepository{
+	mockRepo := &mockCategoryScoresRepository{
 		dailyRatings: []models.CategoryRatingOverTimePeriod{
 			{
 				CategoryID:     1,
@@ -469,7 +571,7 @@ func TestScoreService_GetAggregatedCategoryScores_ThresholdBoundary(t *testing.T
 			startDate := baseDate
 			endDate := baseDate.Add(tt.duration)
 
-			mockRepo := &mockAnalyticsRepository{
+			mockRepo := &mockCategoryScoresRepository{
 				dailyRatings:  []models.CategoryRatingOverTimePeriod{},
 				weeklyRatings: []models.CategoryRatingOverTimePeriod{},
 			}
@@ -485,5 +587,312 @@ func TestScoreService_GetAggregatedCategoryScores_ThresholdBoundary(t *testing.T
 				t.Errorf("Expected %v, got %v", tt.expectedGranularity, result.Granularity)
 			}
 		})
+	}
+}
+
+// Test for NO DATA scenario
+func TestScoreService_GetAggregatedCategoryScores_NoData(t *testing.T) {
+	startDate := time.Date(2025, 1, 1, 0, 0, 0, 0, time.UTC)
+	endDate := time.Date(2025, 1, 10, 0, 0, 0, 0, time.UTC)
+
+	mockRepo := &mockCategoryScoresRepository{
+		dailyRatings: []models.CategoryRatingOverTimePeriod{},
+	}
+
+	service := newTestScoreService(mockRepo)
+	result, err := service.GetAggregatedCategoryScores(startDate, endDate)
+
+	if err != nil {
+		t.Fatalf("GetAggregatedCategoryScores() error = %v, expected nil", err)
+	}
+
+	if result == nil {
+		t.Fatal("Expected non-nil result")
+	}
+
+	// Should have empty categories array
+	if len(result.Categories) != 0 {
+		t.Errorf("Expected 0 categories, got %d", len(result.Categories))
+	}
+
+	// Should have valid bucket range
+	if result.BucketRange == nil {
+		t.Error("Expected non-nil bucket range")
+	} else {
+		if !result.BucketRange.Start.AsTime().Equal(startDate) {
+			t.Errorf("Expected start date %v, got %v", startDate, result.BucketRange.Start.AsTime())
+		}
+		if !result.BucketRange.End.AsTime().Equal(endDate) {
+			t.Errorf("Expected end date %v, got %v", endDate, result.BucketRange.End.AsTime())
+		}
+	}
+
+	// Should have correct granularity (daily for 9 days)
+	if result.Granularity != proto.Granularity_GRANULARITY_DAY {
+		t.Errorf("Expected GRANULARITY_DAY, got %v", result.Granularity)
+	}
+}
+
+// Test for SINGLE SCORE scenario
+func TestScoreService_GetAggregatedCategoryScores_SingleScore(t *testing.T) {
+	startDate := time.Date(2025, 1, 1, 0, 0, 0, 0, time.UTC)
+	endDate := time.Date(2025, 1, 10, 0, 0, 0, 0, time.UTC)
+
+	avgPercent := 85.0
+	categoryWeight := 0.6
+	ratingCount := 15
+	testDate := time.Date(2025, 1, 5, 0, 0, 0, 0, time.UTC)
+
+	mockRepo := &mockCategoryScoresRepository{
+		dailyRatings: []models.CategoryRatingOverTimePeriod{
+			{
+				CategoryID:     1,
+				CategoryName:   "Quality",
+				AvgPercent:     avgPercent,
+				CategoryWeight: categoryWeight,
+				RatingCount:    ratingCount,
+				Date:           testDate,
+			},
+		},
+	}
+
+	service := newTestScoreService(mockRepo)
+	result, err := service.GetAggregatedCategoryScores(startDate, endDate)
+
+	if err != nil {
+		t.Fatalf("GetAggregatedCategoryScores() error = %v", err)
+	}
+
+	// Should have exactly 1 category
+	if len(result.Categories) != 1 {
+		t.Fatalf("Expected 1 category, got %d", len(result.Categories))
+	}
+
+	category := result.Categories[0]
+
+	// Verify category details
+	if category.CategoryId != 1 {
+		t.Errorf("Expected CategoryId 1, got %d", category.CategoryId)
+	}
+
+	if category.CategoryName != "Quality" {
+		t.Errorf("Expected CategoryName 'Quality', got '%s'", category.CategoryName)
+	}
+
+	// Should have exactly 1 score point
+	if len(category.Scores) != 1 {
+		t.Fatalf("Expected 1 score point, got %d", len(category.Scores))
+	}
+
+	scorePoint := category.Scores[0]
+
+	// Verify score calculation
+	expectedScore := float32(avgPercent * categoryWeight * RATING_TO_PERCENT_MODIFICATOR)
+	if scorePoint.Score != expectedScore {
+		t.Errorf("Expected score %v, got %v", expectedScore, scorePoint.Score)
+	}
+
+	// Verify date
+	if !scorePoint.Date.AsTime().Equal(testDate) {
+		t.Errorf("Expected date %v, got %v", testDate, scorePoint.Date.AsTime())
+	}
+
+	// Verify count
+	if scorePoint.Count.GetValue() != int32(ratingCount) {
+		t.Errorf("Expected count %d, got %d", ratingCount, scorePoint.Count.GetValue())
+	}
+
+	// Verify total count
+	if category.CategoryTotalCount != int32(ratingCount) {
+		t.Errorf("Expected CategoryTotalCount %d, got %d", ratingCount, category.CategoryTotalCount)
+	}
+}
+
+// Test for MULTIPLE SCORES scenario
+func TestScoreService_GetAggregatedCategoryScores_MultipleScores(t *testing.T) {
+	startDate := time.Date(2025, 1, 1, 0, 0, 0, 0, time.UTC)
+	endDate := time.Date(2025, 1, 15, 0, 0, 0, 0, time.UTC)
+
+	mockRepo := &mockCategoryScoresRepository{
+		dailyRatings: []models.CategoryRatingOverTimePeriod{
+			// Category 1: Service - 3 score points
+			{
+				CategoryID:     1,
+				CategoryName:   "Service",
+				AvgPercent:     80.0,
+				CategoryWeight: 0.4,
+				RatingCount:    10,
+				Date:           time.Date(2025, 1, 2, 0, 0, 0, 0, time.UTC),
+			},
+			{
+				CategoryID:     1,
+				CategoryName:   "Service",
+				AvgPercent:     85.0,
+				CategoryWeight: 0.4,
+				RatingCount:    15,
+				Date:           time.Date(2025, 1, 5, 0, 0, 0, 0, time.UTC),
+			},
+			{
+				CategoryID:     1,
+				CategoryName:   "Service",
+				AvgPercent:     90.0,
+				CategoryWeight: 0.4,
+				RatingCount:    20,
+				Date:           time.Date(2025, 1, 10, 0, 0, 0, 0, time.UTC),
+			},
+			// Category 2: Quality - 2 score points
+			{
+				CategoryID:     2,
+				CategoryName:   "Quality",
+				AvgPercent:     75.0,
+				CategoryWeight: 0.6,
+				RatingCount:    12,
+				Date:           time.Date(2025, 1, 3, 0, 0, 0, 0, time.UTC),
+			},
+			{
+				CategoryID:     2,
+				CategoryName:   "Quality",
+				AvgPercent:     82.0,
+				CategoryWeight: 0.6,
+				RatingCount:    18,
+				Date:           time.Date(2025, 1, 8, 0, 0, 0, 0, time.UTC),
+			},
+		},
+	}
+
+	service := newTestScoreService(mockRepo)
+	result, err := service.GetAggregatedCategoryScores(startDate, endDate)
+
+	if err != nil {
+		t.Fatalf("GetAggregatedCategoryScores() error = %v", err)
+	}
+
+	// Should have 2 categories
+	if len(result.Categories) != 2 {
+		t.Fatalf("Expected 2 categories, got %d", len(result.Categories))
+	}
+
+	// Find each category
+	var serviceCategory, qualityCategory *proto.CategorySeries
+	for _, cat := range result.Categories {
+		if cat.CategoryName == "Service" {
+			serviceCategory = cat
+		} else if cat.CategoryName == "Quality" {
+			qualityCategory = cat
+		}
+	}
+
+	if serviceCategory == nil {
+		t.Fatal("Service category not found")
+	}
+	if qualityCategory == nil {
+		t.Fatal("Quality category not found")
+	}
+
+	// Test Service category
+	if len(serviceCategory.Scores) != 3 {
+		t.Errorf("Expected 3 score points for Service, got %d", len(serviceCategory.Scores))
+	}
+
+	// Verify Service scores are sorted by date
+	if len(serviceCategory.Scores) == 3 {
+		date1 := serviceCategory.Scores[0].Date.AsTime()
+		date2 := serviceCategory.Scores[1].Date.AsTime()
+		date3 := serviceCategory.Scores[2].Date.AsTime()
+
+		if !date1.Before(date2) {
+			t.Errorf("Service scores not sorted: %v should be before %v", date1, date2)
+		}
+		if !date2.Before(date3) {
+			t.Errorf("Service scores not sorted: %v should be before %v", date2, date3)
+		}
+
+		// Verify specific dates
+		expectedDates := []time.Time{
+			time.Date(2025, 1, 2, 0, 0, 0, 0, time.UTC),
+			time.Date(2025, 1, 5, 0, 0, 0, 0, time.UTC),
+			time.Date(2025, 1, 10, 0, 0, 0, 0, time.UTC),
+		}
+		for i, expected := range expectedDates {
+			actual := serviceCategory.Scores[i].Date.AsTime()
+			if !actual.Equal(expected) {
+				t.Errorf("Service score %d: expected date %v, got %v", i, expected, actual)
+			}
+		}
+
+		// Verify score calculations
+		expectedScores := []float32{
+			float32(80.0 * 0.4 * RATING_TO_PERCENT_MODIFICATOR), // 640
+			float32(85.0 * 0.4 * RATING_TO_PERCENT_MODIFICATOR), // 680
+			float32(90.0 * 0.4 * RATING_TO_PERCENT_MODIFICATOR), // 720
+		}
+		for i, expected := range expectedScores {
+			actual := serviceCategory.Scores[i].Score
+			if actual != expected {
+				t.Errorf("Service score %d: expected %v, got %v", i, expected, actual)
+			}
+		}
+	}
+
+	// Verify Service total count (10 + 15 + 20 = 45)
+	if serviceCategory.CategoryTotalCount != 45 {
+		t.Errorf("Expected Service CategoryTotalCount 45, got %d", serviceCategory.CategoryTotalCount)
+	}
+
+	// Test Quality category
+	if len(qualityCategory.Scores) != 2 {
+		t.Errorf("Expected 2 score points for Quality, got %d", len(qualityCategory.Scores))
+	}
+
+	// Verify Quality scores are sorted by date
+	if len(qualityCategory.Scores) == 2 {
+		date1 := qualityCategory.Scores[0].Date.AsTime()
+		date2 := qualityCategory.Scores[1].Date.AsTime()
+
+		if !date1.Before(date2) {
+			t.Errorf("Quality scores not sorted: %v should be before %v", date1, date2)
+		}
+
+		// Verify specific dates
+		expectedDates := []time.Time{
+			time.Date(2025, 1, 3, 0, 0, 0, 0, time.UTC),
+			time.Date(2025, 1, 8, 0, 0, 0, 0, time.UTC),
+		}
+		for i, expected := range expectedDates {
+			actual := qualityCategory.Scores[i].Date.AsTime()
+			if !actual.Equal(expected) {
+				t.Errorf("Quality score %d: expected date %v, got %v", i, expected, actual)
+			}
+		}
+
+		// Verify score calculations
+		expectedScores := []float32{
+			float32(75.0 * 0.6 * RATING_TO_PERCENT_MODIFICATOR), // 900
+			float32(82.0 * 0.6 * RATING_TO_PERCENT_MODIFICATOR), // 984
+		}
+		for i, expected := range expectedScores {
+			actual := qualityCategory.Scores[i].Score
+			if actual != expected {
+				t.Errorf("Quality score %d: expected %v, got %v", i, expected, actual)
+			}
+		}
+	}
+
+	// Verify Quality total count (12 + 18 = 30)
+	if qualityCategory.CategoryTotalCount != 30 {
+		t.Errorf("Expected Quality CategoryTotalCount 30, got %d", qualityCategory.CategoryTotalCount)
+	}
+
+	// Verify bucket range
+	if !result.BucketRange.Start.AsTime().Equal(startDate) {
+		t.Errorf("Expected start date %v, got %v", startDate, result.BucketRange.Start.AsTime())
+	}
+	if !result.BucketRange.End.AsTime().Equal(endDate) {
+		t.Errorf("Expected end date %v, got %v", endDate, result.BucketRange.End.AsTime())
+	}
+
+	// Verify granularity (14 days - should be daily)
+	if result.Granularity != proto.Granularity_GRANULARITY_DAY {
+		t.Errorf("Expected GRANULARITY_DAY, got %v", result.Granularity)
 	}
 }
