@@ -6,7 +6,7 @@ All service code is in `./backend` folder.
 
 ## Stack
 
-- Go 1.21+
+- Go 1.25.1
 - Protocol Buffers compiler (protoc)
 - SQLite3
 - Docker and Docker Compose (for containerized deployment)
@@ -40,6 +40,11 @@ Build the server:
 ```bash
 cd backend
 make build
+```
+
+Run with docker compose:
+```bash
+docker compose --file -f docker-compose.dev.yml up -d
 ```
 
 ## Testing
