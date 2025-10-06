@@ -36,6 +36,10 @@ build-ticket-client:
 build-overall-quality-client:
 	go build -o bin/overall_quality_score_client ./client/overall_quality_score
 
+# Build the period over period client
+build-period-over-period-client:
+	go build -o bin/period_over_period_client ./client/period_over_period
+
 # Run the server
 run:
 	go run main.go
@@ -87,6 +91,20 @@ run-overall-quality-client:
 		exit 1; \
 	else \
 		go run ./client/overall_quality_score -start $(START) -end $(END); \
+	fi
+
+# Run the period over period client (make sure server is running first)
+# Usage: make run-period-over-period-client CURR_START=2025-02-01 CURR_END=2025-02-28 PREV_START=2025-01-01 PREV_END=2025-01-31
+# Or: make run-period-over-period-client (uses default: current week vs previous week)
+run-period-over-period-client:
+	@if [ -z "$(CURR_START)" ] && [ -z "$(CURR_END)" ] && [ -z "$(PREV_START)" ] && [ -z "$(PREV_END)" ]; then \
+		go run ./client/period_over_period; \
+	elif [ -z "$(CURR_START)" ] || [ -z "$(CURR_END)" ] || [ -z "$(PREV_START)" ] || [ -z "$(PREV_END)" ]; then \
+		echo "Error: All four dates must be provided together"; \
+		echo "Usage: make run-period-over-period-client CURR_START=2025-02-01 CURR_END=2025-02-28 PREV_START=2025-01-01 PREV_END=2025-01-31"; \
+		exit 1; \
+	else \
+		go run ./client/period_over_period -current-start $(CURR_START) -current-end $(CURR_END) -previous-start $(PREV_START) -previous-end $(PREV_END); \
 	fi
 
 # Clean build artifacts

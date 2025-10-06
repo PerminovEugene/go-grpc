@@ -84,28 +84,10 @@ func (s *AnalyticsServer) GetOverallQualityScore(ctx context.Context, req *proto
 }
 
 func (s *AnalyticsServer) GetPeriodOverPeriodChange(ctx context.Context, req *proto.PeriodOverPeriodChangeRequest) (*proto.PeriodOverPeriodChangeResponse, error) {
-	return nil, nil
+	currentStart := req.CurrentStart.AsTime()
+	currentEnd := req.CurrentEnd.AsTime()
+	previousStart := req.PreviousStart.AsTime()
+	previousEnd := req.PreviousEnd.AsTime()
 
-	// currentStart := req.CurrentStart.AsTime()
-	// currentEnd := req.CurrentEnd.AsTime()
-	// previousStart := req.PreviousStart.AsTime()
-	// previousEnd := req.PreviousEnd.AsTime()
-
-	// currentScore, previousScore, err := s.scoreService.GetPeriodOverPeriodChange(
-	// 	currentStart, currentEnd, previousStart, previousEnd)
-	// if err != nil {
-	// 	return nil, fmt.Errorf("failed to get period over period change: %v", err)
-	// }
-
-	// changePercentage := s.scoreService.CalculateChangePercentage(currentScore, previousScore)
-
-	// return &proto.PeriodOverPeriodChangeResponse{
-	// 	CurrentPeriodScore:  currentScore,
-	// 	PreviousPeriodScore: previousScore,
-	// 	ChangePercentage:    changePercentage,
-	// 	CurrentStart:        req.CurrentStart,
-	// 	CurrentEnd:          req.CurrentEnd,
-	// 	PreviousStart:       req.PreviousStart,
-	// 	PreviousEnd:         req.PreviousEnd,
-	// }, nil
+	return s.scoreService.GetPeriodOverPeriodChange(currentStart, currentEnd, previousStart, previousEnd)
 }

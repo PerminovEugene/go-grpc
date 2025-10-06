@@ -87,10 +87,10 @@ func parseDates(startStr, endStr string) (time.Time, time.Time, error) {
 func displayResults(resp *proto.OverallQualityScoreResponse, start, end time.Time) {
 	fmt.Printf("=== Overall Quality Score ===\n")
 	fmt.Printf("Period: %s to %s\n", start.Format("2006-01-02"), end.Format("2006-01-02"))
-	
+
 	duration := end.Sub(start)
 	daysCount := int(duration.Hours() / 24)
-	
+
 	var periodDesc string
 	switch {
 	case daysCount == 7:

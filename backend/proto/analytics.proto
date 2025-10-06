@@ -8,6 +8,7 @@ import "google/protobuf/timestamp.proto";
 import "category_score.proto";
 import "ticket_score.proto";
 import "overall_quality_score.proto";
+import "period_over_period.proto";
 
 message RatingCategory {
   int32 id = 1;
@@ -36,15 +37,6 @@ message WeeklyAggregatedScoresResponse {
 }
 
 
-message PeriodOverPeriodChangeResponse {
-  double current_period_score = 1;
-  double previous_period_score = 2;
-  double change_percentage = 3;
-  google.protobuf.Timestamp current_start = 4;
-  google.protobuf.Timestamp current_end = 5;
-  google.protobuf.Timestamp previous_start = 6;
-  google.protobuf.Timestamp previous_end = 7;
-}
 
 message AggregatedCategoryScoresRequest {
   google.protobuf.Timestamp start_date = 1;
@@ -56,12 +48,6 @@ message ScoresByTicketRequest {
   google.protobuf.Timestamp end_date = 2;
 }
 
-message PeriodOverPeriodChangeRequest {
-  google.protobuf.Timestamp current_start = 1;
-  google.protobuf.Timestamp current_end = 2;
-  google.protobuf.Timestamp previous_start = 3;
-  google.protobuf.Timestamp previous_end = 4;
-}
 
 service AnalyticsService {
   rpc GetAggregatedCategoryScores(AggregatedCategoryScoresRequest) returns (AggregatedCategoryScoresResponse);

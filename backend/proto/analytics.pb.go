@@ -278,98 +278,6 @@ func (x *WeeklyAggregatedScoresResponse) GetEndDate() *timestamppb.Timestamp {
 	return nil
 }
 
-type PeriodOverPeriodChangeResponse struct {
-	state               protoimpl.MessageState `protogen:"open.v1"`
-	CurrentPeriodScore  float64                `protobuf:"fixed64,1,opt,name=current_period_score,json=currentPeriodScore,proto3" json:"current_period_score,omitempty"`
-	PreviousPeriodScore float64                `protobuf:"fixed64,2,opt,name=previous_period_score,json=previousPeriodScore,proto3" json:"previous_period_score,omitempty"`
-	ChangePercentage    float64                `protobuf:"fixed64,3,opt,name=change_percentage,json=changePercentage,proto3" json:"change_percentage,omitempty"`
-	CurrentStart        *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=current_start,json=currentStart,proto3" json:"current_start,omitempty"`
-	CurrentEnd          *timestamppb.Timestamp `protobuf:"bytes,5,opt,name=current_end,json=currentEnd,proto3" json:"current_end,omitempty"`
-	PreviousStart       *timestamppb.Timestamp `protobuf:"bytes,6,opt,name=previous_start,json=previousStart,proto3" json:"previous_start,omitempty"`
-	PreviousEnd         *timestamppb.Timestamp `protobuf:"bytes,7,opt,name=previous_end,json=previousEnd,proto3" json:"previous_end,omitempty"`
-	unknownFields       protoimpl.UnknownFields
-	sizeCache           protoimpl.SizeCache
-}
-
-func (x *PeriodOverPeriodChangeResponse) Reset() {
-	*x = PeriodOverPeriodChangeResponse{}
-	mi := &file_analytics_proto_msgTypes[4]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *PeriodOverPeriodChangeResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*PeriodOverPeriodChangeResponse) ProtoMessage() {}
-
-func (x *PeriodOverPeriodChangeResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_analytics_proto_msgTypes[4]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use PeriodOverPeriodChangeResponse.ProtoReflect.Descriptor instead.
-func (*PeriodOverPeriodChangeResponse) Descriptor() ([]byte, []int) {
-	return file_analytics_proto_rawDescGZIP(), []int{4}
-}
-
-func (x *PeriodOverPeriodChangeResponse) GetCurrentPeriodScore() float64 {
-	if x != nil {
-		return x.CurrentPeriodScore
-	}
-	return 0
-}
-
-func (x *PeriodOverPeriodChangeResponse) GetPreviousPeriodScore() float64 {
-	if x != nil {
-		return x.PreviousPeriodScore
-	}
-	return 0
-}
-
-func (x *PeriodOverPeriodChangeResponse) GetChangePercentage() float64 {
-	if x != nil {
-		return x.ChangePercentage
-	}
-	return 0
-}
-
-func (x *PeriodOverPeriodChangeResponse) GetCurrentStart() *timestamppb.Timestamp {
-	if x != nil {
-		return x.CurrentStart
-	}
-	return nil
-}
-
-func (x *PeriodOverPeriodChangeResponse) GetCurrentEnd() *timestamppb.Timestamp {
-	if x != nil {
-		return x.CurrentEnd
-	}
-	return nil
-}
-
-func (x *PeriodOverPeriodChangeResponse) GetPreviousStart() *timestamppb.Timestamp {
-	if x != nil {
-		return x.PreviousStart
-	}
-	return nil
-}
-
-func (x *PeriodOverPeriodChangeResponse) GetPreviousEnd() *timestamppb.Timestamp {
-	if x != nil {
-		return x.PreviousEnd
-	}
-	return nil
-}
-
 type AggregatedCategoryScoresRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	StartDate     *timestamppb.Timestamp `protobuf:"bytes,1,opt,name=start_date,json=startDate,proto3" json:"start_date,omitempty"`
@@ -380,7 +288,7 @@ type AggregatedCategoryScoresRequest struct {
 
 func (x *AggregatedCategoryScoresRequest) Reset() {
 	*x = AggregatedCategoryScoresRequest{}
-	mi := &file_analytics_proto_msgTypes[5]
+	mi := &file_analytics_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -392,7 +300,7 @@ func (x *AggregatedCategoryScoresRequest) String() string {
 func (*AggregatedCategoryScoresRequest) ProtoMessage() {}
 
 func (x *AggregatedCategoryScoresRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_analytics_proto_msgTypes[5]
+	mi := &file_analytics_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -405,7 +313,7 @@ func (x *AggregatedCategoryScoresRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AggregatedCategoryScoresRequest.ProtoReflect.Descriptor instead.
 func (*AggregatedCategoryScoresRequest) Descriptor() ([]byte, []int) {
-	return file_analytics_proto_rawDescGZIP(), []int{5}
+	return file_analytics_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *AggregatedCategoryScoresRequest) GetStartDate() *timestamppb.Timestamp {
@@ -432,7 +340,7 @@ type ScoresByTicketRequest struct {
 
 func (x *ScoresByTicketRequest) Reset() {
 	*x = ScoresByTicketRequest{}
-	mi := &file_analytics_proto_msgTypes[6]
+	mi := &file_analytics_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -444,7 +352,7 @@ func (x *ScoresByTicketRequest) String() string {
 func (*ScoresByTicketRequest) ProtoMessage() {}
 
 func (x *ScoresByTicketRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_analytics_proto_msgTypes[6]
+	mi := &file_analytics_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -457,7 +365,7 @@ func (x *ScoresByTicketRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ScoresByTicketRequest.ProtoReflect.Descriptor instead.
 func (*ScoresByTicketRequest) Descriptor() ([]byte, []int) {
-	return file_analytics_proto_rawDescGZIP(), []int{6}
+	return file_analytics_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *ScoresByTicketRequest) GetStartDate() *timestamppb.Timestamp {
@@ -474,79 +382,11 @@ func (x *ScoresByTicketRequest) GetEndDate() *timestamppb.Timestamp {
 	return nil
 }
 
-type PeriodOverPeriodChangeRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	CurrentStart  *timestamppb.Timestamp `protobuf:"bytes,1,opt,name=current_start,json=currentStart,proto3" json:"current_start,omitempty"`
-	CurrentEnd    *timestamppb.Timestamp `protobuf:"bytes,2,opt,name=current_end,json=currentEnd,proto3" json:"current_end,omitempty"`
-	PreviousStart *timestamppb.Timestamp `protobuf:"bytes,3,opt,name=previous_start,json=previousStart,proto3" json:"previous_start,omitempty"`
-	PreviousEnd   *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=previous_end,json=previousEnd,proto3" json:"previous_end,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *PeriodOverPeriodChangeRequest) Reset() {
-	*x = PeriodOverPeriodChangeRequest{}
-	mi := &file_analytics_proto_msgTypes[7]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *PeriodOverPeriodChangeRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*PeriodOverPeriodChangeRequest) ProtoMessage() {}
-
-func (x *PeriodOverPeriodChangeRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_analytics_proto_msgTypes[7]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use PeriodOverPeriodChangeRequest.ProtoReflect.Descriptor instead.
-func (*PeriodOverPeriodChangeRequest) Descriptor() ([]byte, []int) {
-	return file_analytics_proto_rawDescGZIP(), []int{7}
-}
-
-func (x *PeriodOverPeriodChangeRequest) GetCurrentStart() *timestamppb.Timestamp {
-	if x != nil {
-		return x.CurrentStart
-	}
-	return nil
-}
-
-func (x *PeriodOverPeriodChangeRequest) GetCurrentEnd() *timestamppb.Timestamp {
-	if x != nil {
-		return x.CurrentEnd
-	}
-	return nil
-}
-
-func (x *PeriodOverPeriodChangeRequest) GetPreviousStart() *timestamppb.Timestamp {
-	if x != nil {
-		return x.PreviousStart
-	}
-	return nil
-}
-
-func (x *PeriodOverPeriodChangeRequest) GetPreviousEnd() *timestamppb.Timestamp {
-	if x != nil {
-		return x.PreviousEnd
-	}
-	return nil
-}
-
 var File_analytics_proto protoreflect.FileDescriptor
 
 const file_analytics_proto_rawDesc = "" +
 	"\n" +
-	"\x0fanalytics.proto\x12\tanalytics\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x14category_score.proto\x1a\x12ticket_score.proto\x1a\x1boverall_quality_score.proto\"L\n" +
+	"\x0fanalytics.proto\x12\tanalytics\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x14category_score.proto\x1a\x12ticket_score.proto\x1a\x1boverall_quality_score.proto\x1a\x18period_over_period.proto\"L\n" +
 	"\x0eRatingCategory\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x05R\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x16\n" +
@@ -567,16 +407,7 @@ const file_analytics_proto_rawDesc = "" +
 	"\x06scores\x18\x01 \x03(\v2\x18.analytics.CategoryScoreR\x06scores\x129\n" +
 	"\n" +
 	"start_date\x18\x02 \x01(\v2\x1a.google.protobuf.TimestampR\tstartDate\x125\n" +
-	"\bend_date\x18\x03 \x01(\v2\x1a.google.protobuf.TimestampR\aendDate\"\xb3\x03\n" +
-	"\x1ePeriodOverPeriodChangeResponse\x120\n" +
-	"\x14current_period_score\x18\x01 \x01(\x01R\x12currentPeriodScore\x122\n" +
-	"\x15previous_period_score\x18\x02 \x01(\x01R\x13previousPeriodScore\x12+\n" +
-	"\x11change_percentage\x18\x03 \x01(\x01R\x10changePercentage\x12?\n" +
-	"\rcurrent_start\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\fcurrentStart\x12;\n" +
-	"\vcurrent_end\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampR\n" +
-	"currentEnd\x12A\n" +
-	"\x0eprevious_start\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampR\rpreviousStart\x12=\n" +
-	"\fprevious_end\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\vpreviousEnd\"\x93\x01\n" +
+	"\bend_date\x18\x03 \x01(\v2\x1a.google.protobuf.TimestampR\aendDate\"\x93\x01\n" +
 	"\x1fAggregatedCategoryScoresRequest\x129\n" +
 	"\n" +
 	"start_date\x18\x01 \x01(\v2\x1a.google.protobuf.TimestampR\tstartDate\x125\n" +
@@ -584,13 +415,7 @@ const file_analytics_proto_rawDesc = "" +
 	"\x15ScoresByTicketRequest\x129\n" +
 	"\n" +
 	"start_date\x18\x01 \x01(\v2\x1a.google.protobuf.TimestampR\tstartDate\x125\n" +
-	"\bend_date\x18\x02 \x01(\v2\x1a.google.protobuf.TimestampR\aendDate\"\x9f\x02\n" +
-	"\x1dPeriodOverPeriodChangeRequest\x12?\n" +
-	"\rcurrent_start\x18\x01 \x01(\v2\x1a.google.protobuf.TimestampR\fcurrentStart\x12;\n" +
-	"\vcurrent_end\x18\x02 \x01(\v2\x1a.google.protobuf.TimestampR\n" +
-	"currentEnd\x12A\n" +
-	"\x0eprevious_start\x18\x03 \x01(\v2\x1a.google.protobuf.TimestampR\rpreviousStart\x12=\n" +
-	"\fprevious_end\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\vpreviousEnd2\xbf\x03\n" +
+	"\bend_date\x18\x02 \x01(\v2\x1a.google.protobuf.TimestampR\aendDate2\xbf\x03\n" +
 	"\x10AnalyticsService\x12v\n" +
 	"\x1bGetAggregatedCategoryScores\x12*.analytics.AggregatedCategoryScoresRequest\x1a+.analytics.AggregatedCategoryScoresResponse\x12X\n" +
 	"\x11GetScoresByTicket\x12 .analytics.ScoresByTicketRequest\x1a!.analytics.ScoresByTicketResponse\x12g\n" +
@@ -609,55 +434,47 @@ func file_analytics_proto_rawDescGZIP() []byte {
 	return file_analytics_proto_rawDescData
 }
 
-var file_analytics_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
+var file_analytics_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
 var file_analytics_proto_goTypes = []any{
 	(*RatingCategory)(nil),                   // 0: analytics.RatingCategory
 	(*CategoryScore)(nil),                    // 1: analytics.CategoryScore
 	(*DailyAggregatedScoresResponse)(nil),    // 2: analytics.DailyAggregatedScoresResponse
 	(*WeeklyAggregatedScoresResponse)(nil),   // 3: analytics.WeeklyAggregatedScoresResponse
-	(*PeriodOverPeriodChangeResponse)(nil),   // 4: analytics.PeriodOverPeriodChangeResponse
-	(*AggregatedCategoryScoresRequest)(nil),  // 5: analytics.AggregatedCategoryScoresRequest
-	(*ScoresByTicketRequest)(nil),            // 6: analytics.ScoresByTicketRequest
-	(*PeriodOverPeriodChangeRequest)(nil),    // 7: analytics.PeriodOverPeriodChangeRequest
-	(*timestamppb.Timestamp)(nil),            // 8: google.protobuf.Timestamp
-	(*OverallQualityScoreRequest)(nil),       // 9: analytics.OverallQualityScoreRequest
-	(*AggregatedCategoryScoresResponse)(nil), // 10: analytics.AggregatedCategoryScoresResponse
-	(*ScoresByTicketResponse)(nil),           // 11: analytics.ScoresByTicketResponse
-	(*OverallQualityScoreResponse)(nil),      // 12: analytics.OverallQualityScoreResponse
+	(*AggregatedCategoryScoresRequest)(nil),  // 4: analytics.AggregatedCategoryScoresRequest
+	(*ScoresByTicketRequest)(nil),            // 5: analytics.ScoresByTicketRequest
+	(*timestamppb.Timestamp)(nil),            // 6: google.protobuf.Timestamp
+	(*OverallQualityScoreRequest)(nil),       // 7: analytics.OverallQualityScoreRequest
+	(*PeriodOverPeriodChangeRequest)(nil),    // 8: analytics.PeriodOverPeriodChangeRequest
+	(*AggregatedCategoryScoresResponse)(nil), // 9: analytics.AggregatedCategoryScoresResponse
+	(*ScoresByTicketResponse)(nil),           // 10: analytics.ScoresByTicketResponse
+	(*OverallQualityScoreResponse)(nil),      // 11: analytics.OverallQualityScoreResponse
+	(*PeriodOverPeriodChangeResponse)(nil),   // 12: analytics.PeriodOverPeriodChangeResponse
 }
 var file_analytics_proto_depIdxs = []int32{
-	8,  // 0: analytics.CategoryScore.date:type_name -> google.protobuf.Timestamp
+	6,  // 0: analytics.CategoryScore.date:type_name -> google.protobuf.Timestamp
 	1,  // 1: analytics.DailyAggregatedScoresResponse.scores:type_name -> analytics.CategoryScore
-	8,  // 2: analytics.DailyAggregatedScoresResponse.start_date:type_name -> google.protobuf.Timestamp
-	8,  // 3: analytics.DailyAggregatedScoresResponse.end_date:type_name -> google.protobuf.Timestamp
+	6,  // 2: analytics.DailyAggregatedScoresResponse.start_date:type_name -> google.protobuf.Timestamp
+	6,  // 3: analytics.DailyAggregatedScoresResponse.end_date:type_name -> google.protobuf.Timestamp
 	1,  // 4: analytics.WeeklyAggregatedScoresResponse.scores:type_name -> analytics.CategoryScore
-	8,  // 5: analytics.WeeklyAggregatedScoresResponse.start_date:type_name -> google.protobuf.Timestamp
-	8,  // 6: analytics.WeeklyAggregatedScoresResponse.end_date:type_name -> google.protobuf.Timestamp
-	8,  // 7: analytics.PeriodOverPeriodChangeResponse.current_start:type_name -> google.protobuf.Timestamp
-	8,  // 8: analytics.PeriodOverPeriodChangeResponse.current_end:type_name -> google.protobuf.Timestamp
-	8,  // 9: analytics.PeriodOverPeriodChangeResponse.previous_start:type_name -> google.protobuf.Timestamp
-	8,  // 10: analytics.PeriodOverPeriodChangeResponse.previous_end:type_name -> google.protobuf.Timestamp
-	8,  // 11: analytics.AggregatedCategoryScoresRequest.start_date:type_name -> google.protobuf.Timestamp
-	8,  // 12: analytics.AggregatedCategoryScoresRequest.end_date:type_name -> google.protobuf.Timestamp
-	8,  // 13: analytics.ScoresByTicketRequest.start_date:type_name -> google.protobuf.Timestamp
-	8,  // 14: analytics.ScoresByTicketRequest.end_date:type_name -> google.protobuf.Timestamp
-	8,  // 15: analytics.PeriodOverPeriodChangeRequest.current_start:type_name -> google.protobuf.Timestamp
-	8,  // 16: analytics.PeriodOverPeriodChangeRequest.current_end:type_name -> google.protobuf.Timestamp
-	8,  // 17: analytics.PeriodOverPeriodChangeRequest.previous_start:type_name -> google.protobuf.Timestamp
-	8,  // 18: analytics.PeriodOverPeriodChangeRequest.previous_end:type_name -> google.protobuf.Timestamp
-	5,  // 19: analytics.AnalyticsService.GetAggregatedCategoryScores:input_type -> analytics.AggregatedCategoryScoresRequest
-	6,  // 20: analytics.AnalyticsService.GetScoresByTicket:input_type -> analytics.ScoresByTicketRequest
-	9,  // 21: analytics.AnalyticsService.GetOverallQualityScore:input_type -> analytics.OverallQualityScoreRequest
-	7,  // 22: analytics.AnalyticsService.GetPeriodOverPeriodChange:input_type -> analytics.PeriodOverPeriodChangeRequest
-	10, // 23: analytics.AnalyticsService.GetAggregatedCategoryScores:output_type -> analytics.AggregatedCategoryScoresResponse
-	11, // 24: analytics.AnalyticsService.GetScoresByTicket:output_type -> analytics.ScoresByTicketResponse
-	12, // 25: analytics.AnalyticsService.GetOverallQualityScore:output_type -> analytics.OverallQualityScoreResponse
-	4,  // 26: analytics.AnalyticsService.GetPeriodOverPeriodChange:output_type -> analytics.PeriodOverPeriodChangeResponse
-	23, // [23:27] is the sub-list for method output_type
-	19, // [19:23] is the sub-list for method input_type
-	19, // [19:19] is the sub-list for extension type_name
-	19, // [19:19] is the sub-list for extension extendee
-	0,  // [0:19] is the sub-list for field type_name
+	6,  // 5: analytics.WeeklyAggregatedScoresResponse.start_date:type_name -> google.protobuf.Timestamp
+	6,  // 6: analytics.WeeklyAggregatedScoresResponse.end_date:type_name -> google.protobuf.Timestamp
+	6,  // 7: analytics.AggregatedCategoryScoresRequest.start_date:type_name -> google.protobuf.Timestamp
+	6,  // 8: analytics.AggregatedCategoryScoresRequest.end_date:type_name -> google.protobuf.Timestamp
+	6,  // 9: analytics.ScoresByTicketRequest.start_date:type_name -> google.protobuf.Timestamp
+	6,  // 10: analytics.ScoresByTicketRequest.end_date:type_name -> google.protobuf.Timestamp
+	4,  // 11: analytics.AnalyticsService.GetAggregatedCategoryScores:input_type -> analytics.AggregatedCategoryScoresRequest
+	5,  // 12: analytics.AnalyticsService.GetScoresByTicket:input_type -> analytics.ScoresByTicketRequest
+	7,  // 13: analytics.AnalyticsService.GetOverallQualityScore:input_type -> analytics.OverallQualityScoreRequest
+	8,  // 14: analytics.AnalyticsService.GetPeriodOverPeriodChange:input_type -> analytics.PeriodOverPeriodChangeRequest
+	9,  // 15: analytics.AnalyticsService.GetAggregatedCategoryScores:output_type -> analytics.AggregatedCategoryScoresResponse
+	10, // 16: analytics.AnalyticsService.GetScoresByTicket:output_type -> analytics.ScoresByTicketResponse
+	11, // 17: analytics.AnalyticsService.GetOverallQualityScore:output_type -> analytics.OverallQualityScoreResponse
+	12, // 18: analytics.AnalyticsService.GetPeriodOverPeriodChange:output_type -> analytics.PeriodOverPeriodChangeResponse
+	15, // [15:19] is the sub-list for method output_type
+	11, // [11:15] is the sub-list for method input_type
+	11, // [11:11] is the sub-list for extension type_name
+	11, // [11:11] is the sub-list for extension extendee
+	0,  // [0:11] is the sub-list for field type_name
 }
 
 func init() { file_analytics_proto_init() }
@@ -668,13 +485,14 @@ func file_analytics_proto_init() {
 	file_category_score_proto_init()
 	file_ticket_score_proto_init()
 	file_overall_quality_score_proto_init()
+	file_period_over_period_proto_init()
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_analytics_proto_rawDesc), len(file_analytics_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   8,
+			NumMessages:   6,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

@@ -20,17 +20,7 @@ Database file is located in root of `./backend` folder.
 
 ## Testing
 
-### Run tests once
-
-```bash
-make test
-```
-
-### Run tests in watch mode
-
-```bash
-make test-watch
-```
+1. make test
 
 ## Production
 
@@ -38,12 +28,7 @@ make test-watch
 
 ## Database
 
-The server uses SQLite with these tables:
-
-- `tickets` - Ticket information
-- `rating_categories` - Categories (Tone, Grammar, etc.)
-- `ratings` - Individual ratings with category, reviewer, reviewee
-- `users` - User information
+The server uses SQLite database, the file with db data is in ./backend folder
 
 ## API
 
