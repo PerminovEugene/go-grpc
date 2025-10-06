@@ -1,0 +1,38 @@
+syntax = "proto3";
+
+package analytics;
+
+option go_package = "go-grpc-backend/proto";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
+
+enum Granularity {
+  GRANULARITY_UNSPECIFIED = 0;
+  GRANULARITY_DAY = 1;
+  GRANULARITY_WEEK = 2;
+}
+
+message ScorePoint {
+  google.protobuf.Timestamp date = 1;
+  float score = 2;
+  google.protobuf.Int32Value count = 3;
+}
+
+message CategorySeries {
+  int32 category_id = 1;
+  string category_name = 2;
+  int32 category_total_count = 3;
+  repeated ScorePoint scores = 4;
+}
+
+message BucketRange {
+  google.protobuf.Timestamp start = 1;
+  google.protobuf.Timestamp end = 2;
+}
+
+message AggregatedCategoryScoresResponse {
+  Granularity granularity = 1;
+  BucketRange bucket_range = 2;
+  repeated CategorySeries categories = 3;
+}

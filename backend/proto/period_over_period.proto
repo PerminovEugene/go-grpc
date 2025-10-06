@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+package analytics;
+
+option go_package = "go-grpc-backend/proto";
+
+import "google/protobuf/timestamp.proto";
+
+message PeriodOverPeriodChangeRequest {
+  google.protobuf.Timestamp current_start = 1;
+  google.protobuf.Timestamp current_end = 2;
+  google.protobuf.Timestamp previous_start = 3;
+  google.protobuf.Timestamp previous_end = 4;
+}
+
+message PeriodOverPeriodChangeResponse {
+  float current_period_score = 1;  // Overall score for current period as percentage (0-100)
+  float previous_period_score = 2;  // Overall score for previous period as percentage (0-100)
+  float change_percentage = 3;  // Percentage change from previous to current period
+  int32 current_total_ratings = 4;  // Total ratings in current period
+  int32 previous_total_ratings = 5;  // Total ratings in previous period
+  google.protobuf.Timestamp current_start = 6;
+  google.protobuf.Timestamp current_end = 7;
+  google.protobuf.Timestamp previous_start = 8;
+  google.protobuf.Timestamp previous_end = 9;
+}
+

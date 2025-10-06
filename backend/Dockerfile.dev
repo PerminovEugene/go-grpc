@@ -1,0 +1,20 @@
+FROM golang:1.25.1-alpine
+
+WORKDIR /app
+
+# Install build dependencies for SQLite and development tools
+RUN apk add --no-cache gcc musl-dev sqlite-dev git
+
+# Install air for hot reloading
+RUN go install github.com/air-verse/air@latest
+
+# Copy go mod files
+COPY go.mod go.sum* ./
+RUN go mod download
+
+# Copy source code (will be overridden by volume mount in dev)
+COPY . .
+
+# Use air for hot reloading in development
+CMD ["air", "-c", ".air.toml"]
+

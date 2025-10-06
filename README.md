@@ -1,48 +1,86 @@
-# Analytics gRPC Server 
+# Analytics gRPC Server
 
 A gRPC server that provides analytics services for ticket rating data.
 
-Database file is located in root of `./backend` folder.
+All service code is in `./backend` folder.
 
-## Grpc Service stack
+## Stack
 
-### Prerequisites
-- Go 1.21+
+- Go 1.25.1
 - Protocol Buffers compiler (protoc)
 - SQLite3
+- Docker and Docker Compose (for containerized deployment)
 
-### Local setup
+## Local Setup
 
-1. Create `.env` file and fill it up, using `.env.example` as template
+### 1. Environment Configuration
 
-2. docker compose up -d
+Create a `.env` file in the project root using `.env.example` as a template:
+
+```bash
+cp .env.example .env
+```
+
+Put ./database.db file to ./backend folder
+
+Available environment variables:
+- `DB_PATH` - Path to SQLite database file (default: `database.db`)
+- `GRPC_PORT` - gRPC server port (default: `50051`)
+
+
+### 2. Local Development (without Docker)
+
+Build the server:
+```bash
+cd backend
+make build
+```
+
+Run the server directly:
+```bash
+cd backend
+make run
+```
 
 ## Testing
 
-1. TODO 
+1. `make test`
+
+## CI/CD
+
+Docker images are automatically built and published to GitHub Container Registry when version tags are pushed (e.g., `v1.0.0`, `v2.1.3`).
+
+To create a new release:
+```bash
+git tag v1.0.0
+git push origin v1.0.0
+```
+
+This will publish the image with multiple tags:
+- Full version: `v1.0.0`
+- Major.minor: `v1.0`
+- Major: `v1`
+
+See [.github/workflows/README.md](.github/workflows/README.md) for more details.
 
 ## Production
 
-1. TODO
-
-## Database
-
-The server uses SQLite with these tables:
-- `tickets` - Ticket information
-- `rating_categories` - Categories (Tone, Grammar, etc.)
-- `ratings` - Individual ratings with category, reviewer, reviewee
-- `users` - User information
+Docker images are available at `ghcr.io/PerminovEugene/go-grpc` and can be deployed to any container orchestration platform (Kubernetes, Docker Swarm, etc.).
 
 ## API
 
 ### GetAggregatedCategoryScores
+
 Returns daily aggregates for periods ≤ 1 month, weekly for longer periods.
 
 ### GetScoresByTicket
+
 Returns scores grouped by ticket within a period.
 
 ### GetOverallQualityScore
+
 Returns overall quality score for a period.
 
 ### GetPeriodOverPeriodChange
+
 Compares two periods and shows percentage change.
