@@ -1,105 +1,64 @@
 # GitHub Actions Workflows
 
-## Docker Image Publishing
+## Docker Publish Workflow
 
-The `publish-docker.yml` workflow automatically builds and publishes Docker images to GitHub Container Registry (ghcr.io).
+The `docker-publish.yml` workflow automatically builds and publishes Docker images to GitHub Container Registry (GHCR) when version tags are pushed.
 
-### Triggers
+### Trigger
 
-The workflow runs on:
-- **Push to main branch**: Publishes with `latest` tag
-- **Version tags** (e.g., `v1.0.0`, `v2.1.3`): Publishes with semantic version tags
-- **Pull requests**: Builds but doesn't push (for validation)
+The workflow **only** runs when version tags matching the pattern `v*.*.*` are pushed to the repository (e.g., `v1.0.0`, `v2.1.3`).
 
-### Image Tagging Strategy
+### What it does
 
-Images are automatically tagged based on the trigger:
-
-| Trigger | Tags Generated | Example |
-|---------|---------------|---------|
-| Push to main | `latest`, `main`, `main-<sha>` | `latest`, `main`, `main-abc1234` |
-| Tag v1.2.3 | `1.2.3`, `1.2`, `1`, `v1.2.3` | All semantic versions |
-| PR #42 | `pr-42` | For testing only (not pushed) |
-
-### Using Published Images
-
-After the workflow runs, your images will be available at:
-
-```
-ghcr.io/<username>/go-grpc
-```
-
-#### Pull the latest image:
-```bash
-docker pull ghcr.io/<username>/go-grpc:latest
-```
-
-#### Pull a specific version:
-```bash
-docker pull ghcr.io/<username>/go-grpc:1.2.3
-```
-
-#### Update docker-compose.yml to use published image:
-```yaml
-services:
-  grpc-server:
-    image: ghcr.io/<username>/go-grpc:${IMAGE_TAG:-latest}
-    # Remove the build section when using published images
-```
+1. Checks out the repository
+2. Logs in to GitHub Container Registry using the built-in `GITHUB_TOKEN`
+3. Extracts version information from the tag
+4. Builds the Docker image from `backend/Dockerfile`
+5. Pushes the image with multiple tags:
+   - Full semantic version (e.g., `v1.2.3`)
+   - Major.minor version (e.g., `v1.2`)
+   - Major version (e.g., `v1`)
 
 ### Creating a Release
 
-To publish a new version:
+To trigger a build and publish a new Docker image:
 
-1. **Tag your release:**
-   ```bash
-   git tag v1.0.0
-   git push origin v1.0.0
-   ```
+```bash
+# Create and push a version tag
+git tag v1.0.0
+git push origin v1.0.0
+```
 
-2. **The workflow automatically:**
-   - Builds the Docker image
-   - Tags it with semantic versions (1.0.0, 1.0, 1)
-   - Pushes to GitHub Container Registry
+### Published Images
+
+Images are available at:
+```
+ghcr.io/perminovEugene/go-grpc:v1.0.0
+ghcr.io/perminovEugene/go-grpc:v1.0
+ghcr.io/perminovEugene/go-grpc:v1
+```
 
 ### Permissions
 
-The workflow uses `GITHUB_TOKEN` which is automatically provided by GitHub Actions. No additional secrets are required.
+The workflow uses the built-in `GITHUB_TOKEN` which has the necessary permissions to:
+- Read repository contents
+- Write to GitHub Packages
 
-The image will be:
-- **Public** - if your repository is public
-- **Private** - if your repository is private
+No additional secrets configuration is required.
 
-To make a private image public:
-1. Go to your GitHub profile → Packages
-2. Select your package
-3. Package settings → Change visibility
+### Pulling Images
 
-### Build Cache
+To use the published images:
 
-The workflow uses GitHub Actions cache to speed up builds:
-- First build: ~3-5 minutes
-- Subsequent builds: ~1-2 minutes (with cache)
+```bash
+# Pull a specific version
+docker pull ghcr.io/perminovEugene/go-grpc:v1.0.0
 
-### Monitoring
+# Pull the latest minor version
+docker pull ghcr.io/perminovEugene/go-grpc:v1.0
 
-To view workflow runs:
-1. Go to your repository on GitHub
-2. Click the "Actions" tab
-3. Select "Build and Publish Docker Image"
+# Pull the latest major version
+docker pull ghcr.io/perminovEugene/go-grpc:v1
+```
 
-### Troubleshooting
-
-**Image push fails:**
-- Ensure GitHub Actions has package write permissions
-- Check the Actions tab for detailed error logs
-
-**Image not visible:**
-- Check package visibility settings
-- Verify you're logged in: `echo $GITHUB_TOKEN | docker login ghcr.io -u USERNAME --password-stdin`
-
-**Build fails:**
-- Check if `database.db` exists in the backend directory
-- Review Dockerfile for any issues
-- Check workflow logs in the Actions tab
-
+**Note:** Images in GHCR may be private by default. To make them public, go to the package settings on GitHub.

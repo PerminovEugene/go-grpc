@@ -30,21 +30,16 @@ Available environment variables:
 
 ### 2. Local Development (without Docker)
 
-Run the server directly:
-```bash
-cd backend
-make run
-```
-
 Build the server:
 ```bash
 cd backend
 make build
 ```
 
-Run with docker compose:
+Run the server directly:
 ```bash
-docker compose --file -f docker-compose.dev.yml up -d
+cd backend
+make run
 ```
 
 ## Testing
@@ -53,15 +48,18 @@ docker compose --file -f docker-compose.dev.yml up -d
 
 ## CI/CD
 
-Docker images are automatically built and published to GitHub Container Registry on:
-- Push to `main` branch → `latest` tag
-- Version tags (e.g., `v1.0.0`) → semantic version tags
+Docker images are automatically built and published to GitHub Container Registry when version tags are pushed (e.g., `v1.0.0`, `v2.1.3`).
 
 To create a new release:
 ```bash
 git tag v1.0.0
 git push origin v1.0.0
 ```
+
+This will publish the image with multiple tags:
+- Full version: `v1.0.0`
+- Major.minor: `v1.0`
+- Major: `v1`
 
 See [.github/workflows/README.md](.github/workflows/README.md) for more details.
 
