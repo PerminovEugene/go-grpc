@@ -2,7 +2,9 @@
 
 A gRPC server that provides analytics services for ticket rating data.
 
-## Prerequisites
+All service code is in `./backend` folder.
+
+## Stack
 
 - Go 1.21+
 - Protocol Buffers compiler (protoc)
@@ -19,32 +21,14 @@ Create a `.env` file in the project root using `.env.example` as a template:
 cp .env.example .env
 ```
 
-Preferably to put ./database.db file to ./backend folder
+Put ./database.db file to ./backend folder
 
 Available environment variables:
 - `DB_PATH` - Path to SQLite database file (default: `database.db`)
-- `IMAGE_TAG` - Docker image tag for versioning (default: `latest`)
 - `GRPC_PORT` - gRPC server port (default: `50051`)
 
-### 2. Docker Deployment
 
-**Build and run with default settings:**
-```bash
-docker compose up -d
-```
-
-**Build with a custom image tag:**
-```bash
-IMAGE_TAG=v1.0.0 docker compose up -d
-```
-
-**Or set it in your .env file:**
-```bash
-echo "IMAGE_TAG=v1.0.0" >> .env
-docker compose up -d
-```
-
-### 3. Local Development (without Docker)
+### 2. Local Development (without Docker)
 
 Run the server directly:
 ```bash
@@ -60,15 +44,25 @@ make build
 
 ## Testing
 
-1. make test
+1. `make test`
+
+## CI/CD
+
+Docker images are automatically built and published to GitHub Container Registry on:
+- Push to `main` branch → `latest` tag
+- Version tags (e.g., `v1.0.0`) → semantic version tags
+
+To create a new release:
+```bash
+git tag v1.0.0
+git push origin v1.0.0
+```
+
+See [.github/workflows/README.md](.github/workflows/README.md) for more details.
 
 ## Production
 
-1. TODO
-
-## Database
-
-The server uses SQLite database, the file with db data is in ./backend folder
+Docker images are available at `ghcr.io/PerminovEugene/go-grpc` and can be deployed to any container orchestration platform (Kubernetes, Docker Swarm, etc.).
 
 ## API
 
