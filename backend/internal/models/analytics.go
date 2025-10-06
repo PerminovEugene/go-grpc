@@ -72,3 +72,10 @@ type PeriodOverPeriodChange struct {
 	PreviousStart       time.Time `json:"previous_start" db:"previous_start"`
 	PreviousEnd         time.Time `json:"previous_end" db:"previous_end"`
 }
+
+type CategoryScore struct {
+	CategoryID   int     `json:"category_id" db:"category_id"`
+	CategoryName string  `json:"category_name" db:"category_name"`
+	Score        float64 `json:"score" db:"score"`
+	RatingCount  int     `json:"rating_count" db:"rating_count"`
+}

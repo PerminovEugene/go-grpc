@@ -1,18 +1,18 @@
 #!/bin/bash
 
-# Quick helper script to run the category scores client
+# Quick helper script to run the ticket scores client
 # Usage examples:
-#   ./run-client.sh 2025-01-01 2025-01-31
-#   ./run-client.sh 2025-01-01 2025-01-31 localhost:50051
+#   ./run-ticket-client.sh 2025-01-01 2025-01-31
+#   ./run-ticket-client.sh 2025-01-01 2025-01-31 localhost:50051
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BACKEND_DIR="$(dirname "$SCRIPT_DIR")"
-CLIENT_BIN="$BACKEND_DIR/bin/category_scores_client"
+CLIENT_BIN="$BACKEND_DIR/bin/ticket_scores_client"
 
 # Check if binary exists, if not build it
 if [ ! -f "$CLIENT_BIN" ]; then
     echo "Client binary not found. Building..."
-    cd "$BACKEND_DIR" && go build -o bin/category_scores_client ./client/category_scores
+    cd "$BACKEND_DIR" && go build -o bin/ticket_scores_client ./client/ticket_scores
     if [ $? -ne 0 ]; then
         echo "Failed to build client"
         exit 1
@@ -43,4 +43,5 @@ else
     echo "Date format: YYYY-MM-DD"
     exit 1
 fi
+
 

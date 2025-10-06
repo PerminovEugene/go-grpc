@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package analytics;
+
+option go_package = "go-grpc-backend/proto";
+
+import "google/protobuf/timestamp.proto";
+
+message TicketScore {
+  int32 ticket_id = 1;
+  repeated CategoryScoreForTicket category_scores = 2;
+}
+
+message CategoryScoreForTicket {
+  int32 category_id = 1;
+  string category_name = 2;
+  float score = 3;
+  int32 rating_count = 4;
+}
+
+message ScoresByTicketResponse {
+  repeated TicketScore tickets = 1;
+  google.protobuf.Timestamp start_date = 2;
+  google.protobuf.Timestamp end_date = 3;
+}
+

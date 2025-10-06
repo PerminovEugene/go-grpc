@@ -2,71 +2,97 @@
 
 ## Building and Running
 
-### Build the client
+### Build the clients
 ```bash
 cd backend
+
+# Build category scores client
 make build-client
+
+# Build ticket scores client
+make build-ticket-client
 ```
 
 ### Run with Makefile
 ```bash
-# With default dates (last 30 days)
-make run-client
+# Category scores client
+make run-client                              # Default dates (last 30 days)
+make run-client START=2025-01-01 END=2025-01-31  # With specific dates
 
-# With specific dates
-make run-client START=2025-01-01 END=2025-01-31
+# Ticket scores client
+make run-ticket-client                       # Default dates (last 30 days)
+make run-ticket-client START=2025-01-01 END=2025-01-31  # With specific dates
 ```
 
 ### Run directly
 ```bash
-# Run the binary
+# Category scores client
 ./bin/category_scores_client -start 2025-01-01 -end 2025-01-31
-
-# Or use the helper script
 ./client/run-client.sh 2025-01-01 2025-01-31
+
+# Ticket scores client
+./bin/ticket_scores_client -start 2025-01-01 -end 2025-01-31
+./client/run-ticket-client.sh 2025-01-01 2025-01-31
 ```
 
 ## Common Scenarios
 
-### 1. Query last month
+### 1. Query category scores for last month
 ```bash
 ./bin/category_scores_client -start 2025-01-01 -end 2025-01-31
 ```
 
-### 2. Query last quarter (will use weekly granularity)
+### 2. Query category scores for last quarter (will use weekly granularity)
 ```bash
 ./bin/category_scores_client -start 2025-01-01 -end 2025-04-01
 ```
 
-### 3. Query with custom server
+### 3. Query ticket scores for last month
 ```bash
+./bin/ticket_scores_client -start 2025-01-01 -end 2025-01-31
+```
+
+### 4. Query with custom server
+```bash
+# Category scores
 ./bin/category_scores_client \
+  -start 2025-01-01 \
+  -end 2025-01-31 \
+  -server production-server:50051
+
+# Ticket scores
+./bin/ticket_scores_client \
   -start 2025-01-01 \
   -end 2025-01-31 \
   -server production-server:50051
 ```
 
-### 4. Use default dates (last 30 days)
+### 5. Use default dates (last 30 days)
 ```bash
 ./bin/category_scores_client
+./bin/ticket_scores_client
 ```
 
-### 5. Testing local development
+### 6. Testing local development
 ```bash
 # Terminal 1 - Start the server
 make run
 
-# Terminal 2 - Run the client
+# Terminal 2 - Run category scores client
 make run-client START=2025-01-01 END=2025-01-31
+
+# Terminal 3 - Run ticket scores client
+make run-ticket-client START=2025-01-01 END=2025-01-31
 ```
 
 ## Understanding the Output
 
+### Category Scores Client
 The client automatically determines the granularity:
 - **Daily**: For periods ≤ 30 days
 - **Weekly**: For periods > 30 days
 
-### Sample Output Structure
+Sample Output Structure:
 ```
 === Aggregated Category Scores ===
 Period: 2025-01-01 to 2025-01-31 (Daily granularity)
@@ -82,6 +108,22 @@ Total data points: 62
      2025-01-27: Score=4.30, Ratings=15
      2025-01-28: Score=4.45, Ratings=16
      ...
+```
+
+### Ticket Scores Client
+Shows category scores grouped by ticket in a table format.
+
+Sample Output Structure:
+```
+=== Scores by Ticket ===
+Period: 2025-01-01 to 2025-01-31
+Total tickets: 5
+
+Ticket ID  | Category                  | Score      | Ratings
+-----------|---------------------------|------------|------------
+1          | Grammar                   |     80.00% |          4
+           | Problem Solving           |     60.00% |          3
+           | Tone                      |    100.00% |          5
 ```
 
 ## Troubleshooting
@@ -111,25 +153,38 @@ No scores found for the specified period.
 #!/bin/bash
 months=("01" "02" "03")
 for month in "${months[@]}"; do
-  echo "Querying month $month..."
+  echo "=== Querying month $month ==="
+  echo "Category Scores:"
   ./bin/category_scores_client -start "2025-$month-01" -end "2025-$month-28"
+  echo ""
+  echo "Ticket Scores:"
+  ./bin/ticket_scores_client -start "2025-$month-01" -end "2025-$month-28"
   echo ""
 done
 ```
 
 ### Save output to file
 ```bash
+# Category scores
 ./bin/category_scores_client \
   -start 2025-01-01 \
   -end 2025-01-31 \
-  > report-january.txt
+  > report-category-scores-january.txt
+
+# Ticket scores
+./bin/ticket_scores_client \
+  -start 2025-01-01 \
+  -end 2025-01-31 \
+  > report-ticket-scores-january.txt
 ```
 
-### JSON parsing (if output is JSON in the future)
+### Compare different periods
 ```bash
-./bin/category_scores_client \
-  -start 2025-01-01 \
-  -end 2025-01-31 \
-  -format json | jq '.scores[] | select(.category_name == "Service")'
+#!/bin/bash
+echo "=== Q1 2025 ==="
+./bin/ticket_scores_client -start 2025-01-01 -end 2025-03-31
+echo ""
+echo "=== Q2 2025 ==="
+./bin/ticket_scores_client -start 2025-04-01 -end 2025-06-30
 ```
 

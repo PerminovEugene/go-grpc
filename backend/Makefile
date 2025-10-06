@@ -24,9 +24,13 @@ build:
 build-debug:
 	go build -gcflags="all=-N -l" -o bin/server-debug main.go
 
-# Build the client
+# Build the category scores client
 build-client:
-	go build -o bin/category_scores_client ./client/category_scores_client.go
+	go build -o bin/category_scores_client ./client/category_scores
+
+# Build the ticket scores client
+build-ticket-client:
+	go build -o bin/ticket_scores_client ./client/ticket_scores
 
 # Run the server
 run:
@@ -44,13 +48,27 @@ debug:
 # Or: make run-client (uses default last 30 days)
 run-client:
 	@if [ -z "$(START)" ] && [ -z "$(END)" ]; then \
-		go run ./client/category_scores_client.go; \
+		go run ./client/category_scores; \
 	elif [ -z "$(START)" ] || [ -z "$(END)" ]; then \
 		echo "Error: Both START and END must be provided together"; \
 		echo "Usage: make run-client START=2025-01-01 END=2025-01-31"; \
 		exit 1; \
 	else \
-		go run ./client/category_scores_client.go -start $(START) -end $(END); \
+		go run ./client/category_scores -start $(START) -end $(END); \
+	fi
+
+# Run the ticket scores client (make sure server is running first)
+# Usage: make run-ticket-client START=2025-01-01 END=2025-01-31
+# Or: make run-ticket-client (uses default last 30 days)
+run-ticket-client:
+	@if [ -z "$(START)" ] && [ -z "$(END)" ]; then \
+		go run ./client/ticket_scores; \
+	elif [ -z "$(START)" ] || [ -z "$(END)" ]; then \
+		echo "Error: Both START and END must be provided together"; \
+		echo "Usage: make run-ticket-client START=2025-01-01 END=2025-01-31"; \
+		exit 1; \
+	else \
+		go run ./client/ticket_scores -start $(START) -end $(END); \
 	fi
 
 # Clean build artifacts

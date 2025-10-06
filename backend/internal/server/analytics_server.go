@@ -70,33 +70,10 @@ func (s *AnalyticsServer) GetAggregatedCategoryScores(ctx context.Context, req *
 }
 
 func (s *AnalyticsServer) GetScoresByTicket(ctx context.Context, req *proto.ScoresByTicketRequest) (*proto.ScoresByTicketResponse, error) {
-	// startDate := req.StartDate.AsTime()
-	// endDate := req.EndDate.AsTime()
+	startDate := req.StartDate.AsTime()
+	endDate := req.EndDate.AsTime()
 
-	return nil, nil
-
-	// scores, err := s.scoreService.GetScoresByTicket(startDate, endDate)
-	// if err != nil {
-	// 	return nil, fmt.Errorf("failed to get scores by ticket: %v", err)
-	// }
-
-	// var protoScores []*proto.TicketCategoryScore
-	// for _, score := range scores {
-	// 	protoScore := &proto.TicketCategoryScore{
-	// 		TicketId:     int32(score.TicketID),
-	// 		CategoryId:   int32(score.CategoryID),
-	// 		CategoryName: score.CategoryName,
-	// 		Score:        score.Score,
-	// 		RatingCount:  int32(score.RatingCount),
-	// 	}
-	// 	protoScores = append(protoScores, protoScore)
-	// }
-
-	// return &proto.ScoresByTicketResponse{
-	// 	Scores:    protoScores,
-	// 	StartDate: req.StartDate,
-	// 	EndDate:   req.EndDate,
-	// }, nil
+	return s.scoreService.GetScoresByTicket(startDate, endDate)
 }
 
 func (s *AnalyticsServer) GetOverallQualityScore(ctx context.Context, req *proto.OverallQualityScoreRequest) (*proto.OverallQualityScoreResponse, error) {

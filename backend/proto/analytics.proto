@@ -6,6 +6,7 @@ option go_package = "go-grpc-backend/proto";
 
 import "google/protobuf/timestamp.proto";
 import "category_score.proto";
+import "ticket_score.proto";
 
 message RatingCategory {
   int32 id = 1;
@@ -33,19 +34,6 @@ message WeeklyAggregatedScoresResponse {
   google.protobuf.Timestamp end_date = 3;
 }
 
-message TicketCategoryScore {
-  int32 ticket_id = 1;
-  int32 category_id = 2;
-  string category_name = 3;
-  double score = 4;
-  int32 rating_count = 5;
-}
-
-message ScoresByTicketResponse {
-  repeated TicketCategoryScore scores = 1;
-  google.protobuf.Timestamp start_date = 2;
-  google.protobuf.Timestamp end_date = 3;
-}
 
 message OverallQualityScoreResponse {
   double overall_score = 1;
