@@ -1,1 +1,16 @@
+# Environment variables
 .env
+
+# Build artifacts
+backend/bin/
+backend/server
+backend/server-debug
+backend/tmp/
+
+# Database files
+backend/database.db
+backend/database.db-shm
+backend/database.db-wal
+backend/*.db
+backend/*.db-shm
+backend/*.db-wal

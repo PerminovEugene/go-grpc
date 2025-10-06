@@ -1,4 +1,4 @@
-FROM golang:1.21-alpine AS builder
+FROM golang:1.23.2-alpine AS builder
 
 WORKDIR /app
 
@@ -16,9 +16,10 @@ RUN apk --no-cache add ca-certificates sqlite
 
 WORKDIR /app
 
-COPY --from=builder /app/server .
-COPY --from=builder /app/database.db .
+# Accept DB_PATH as build argument with default value
+ARG DB_PATH=./database.db
 
-EXPOSE 50051
+COPY --from=builder /app/server .
+COPY --from=builder /app/${DB_PATH} ./database.db
 
 CMD ["./server"]

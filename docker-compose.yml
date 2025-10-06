@@ -2,9 +2,12 @@ version: '3.8'
 
 services:
   grpc-server:
+    image: go-grpc-server:${IMAGE_TAG:-latest}
     build:
       context: ./backend
       dockerfile: Dockerfile
+      args:
+        DB_PATH: ${DB_PATH:-database.db}
     ports:
       - "50051:50051"
     env_file:

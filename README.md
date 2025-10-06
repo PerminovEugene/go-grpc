@@ -2,21 +2,61 @@
 
 A gRPC server that provides analytics services for ticket rating data.
 
-Database file is located in root of `./backend` folder.
-
-## Grpc Service stack
-
-### Prerequisites
+## Prerequisites
 
 - Go 1.21+
 - Protocol Buffers compiler (protoc)
 - SQLite3
+- Docker and Docker Compose (for containerized deployment)
 
-### Local setup
+## Local Setup
 
-1. Create `.env` file and fill it up, using `.env.example` as template
+### 1. Environment Configuration
 
-2. docker compose up -d
+Create a `.env` file in the project root using `.env.example` as a template:
+
+```bash
+cp .env.example .env
+```
+
+Preferably to put ./database.db file to ./backend folder
+
+Available environment variables:
+- `DB_PATH` - Path to SQLite database file (default: `database.db`)
+- `IMAGE_TAG` - Docker image tag for versioning (default: `latest`)
+- `GRPC_PORT` - gRPC server port (default: `50051`)
+
+### 2. Docker Deployment
+
+**Build and run with default settings:**
+```bash
+docker compose up -d
+```
+
+**Build with a custom image tag:**
+```bash
+IMAGE_TAG=v1.0.0 docker compose up -d
+```
+
+**Or set it in your .env file:**
+```bash
+echo "IMAGE_TAG=v1.0.0" >> .env
+docker compose up -d
+```
+
+### 3. Local Development (without Docker)
+
+Run the server directly:
+```bash
+cd backend
+make run
+```
+
+Build the server:
+```bash
+cd backend
+make build
+```
 
 ## Testing
 
