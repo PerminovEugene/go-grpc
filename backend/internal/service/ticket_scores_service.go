@@ -31,15 +31,15 @@ func (s *ScoreService) GetScoresByTicket(startDate, endDate time.Time) (*proto.S
 			ticketMap[ticketID] = ticket
 		}
 
-		// Convert avg rating (0-5) to percentage score (0-100)
-		// Using the same formula as in GetAggregatedCategoryScores
-		percentScore := float32(score.Score * RATING_TO_PERCENT_MODIFICATOR)
+		// Calculate weighted category score using the standard formula
+		// Formula: AvgPercent * CategoryWeight * RATING_TO_PERCENT_MODIFICATOR
+		weightedScore := CalculateCategoryScore(score.Score, score.CategoryWeight)
 
 		// Add category score to ticket
 		categoryScore := &proto.CategoryScoreForTicket{
 			CategoryId:   int32(score.CategoryID),
 			CategoryName: score.CategoryName,
-			Score:        percentScore,
+			Score:        float32(weightedScore),
 			RatingCount:  int32(score.RatingCount),
 		}
 		ticket.CategoryScores = append(ticket.CategoryScores, categoryScore)

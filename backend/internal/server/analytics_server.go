@@ -77,22 +77,10 @@ func (s *AnalyticsServer) GetScoresByTicket(ctx context.Context, req *proto.Scor
 }
 
 func (s *AnalyticsServer) GetOverallQualityScore(ctx context.Context, req *proto.OverallQualityScoreRequest) (*proto.OverallQualityScoreResponse, error) {
-	return nil, nil
+	startDate := req.StartDate.AsTime()
+	endDate := req.EndDate.AsTime()
 
-	// startDate := req.StartDate.AsTime()
-	// endDate := req.EndDate.AsTime()
-
-	// overallScore, totalRatings, err := s.scoreService.GetOverallQualityScore(startDate, endDate)
-	// if err != nil {
-	// 	return nil, fmt.Errorf("failed to get overall quality score: %v", err)
-	// }
-
-	// return &proto.OverallQualityScoreResponse{
-	// 	OverallScore: overallScore,
-	// 	TotalRatings: int32(totalRatings),
-	// 	StartDate:    req.StartDate,
-	// 	EndDate:      req.EndDate,
-	// }, nil
+	return s.scoreService.GetOverallQualityScore(startDate, endDate)
 }
 
 func (s *AnalyticsServer) GetPeriodOverPeriodChange(ctx context.Context, req *proto.PeriodOverPeriodChangeRequest) (*proto.PeriodOverPeriodChangeResponse, error) {

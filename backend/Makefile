@@ -32,6 +32,10 @@ build-client:
 build-ticket-client:
 	go build -o bin/ticket_scores_client ./client/ticket_scores
 
+# Build the overall quality score client
+build-overall-quality-client:
+	go build -o bin/overall_quality_score_client ./client/overall_quality_score
+
 # Run the server
 run:
 	go run main.go
@@ -69,6 +73,20 @@ run-ticket-client:
 		exit 1; \
 	else \
 		go run ./client/ticket_scores -start $(START) -end $(END); \
+	fi
+
+# Run the overall quality score client (make sure server is running first)
+# Usage: make run-overall-quality-client START=2025-01-01 END=2025-01-31
+# Or: make run-overall-quality-client (uses default last 7 days)
+run-overall-quality-client:
+	@if [ -z "$(START)" ] && [ -z "$(END)" ]; then \
+		go run ./client/overall_quality_score; \
+	elif [ -z "$(START)" ] || [ -z "$(END)" ]; then \
+		echo "Error: Both START and END must be provided together"; \
+		echo "Usage: make run-overall-quality-client START=2025-01-01 END=2025-01-31"; \
+		exit 1; \
+	else \
+		go run ./client/overall_quality_score -start $(START) -end $(END); \
 	fi
 
 # Clean build artifacts

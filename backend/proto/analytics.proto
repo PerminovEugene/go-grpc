@@ -7,6 +7,7 @@ option go_package = "go-grpc-backend/proto";
 import "google/protobuf/timestamp.proto";
 import "category_score.proto";
 import "ticket_score.proto";
+import "overall_quality_score.proto";
 
 message RatingCategory {
   int32 id = 1;
@@ -35,13 +36,6 @@ message WeeklyAggregatedScoresResponse {
 }
 
 
-message OverallQualityScoreResponse {
-  double overall_score = 1;
-  int32 total_ratings = 2;
-  google.protobuf.Timestamp start_date = 3;
-  google.protobuf.Timestamp end_date = 4;
-}
-
 message PeriodOverPeriodChangeResponse {
   double current_period_score = 1;
   double previous_period_score = 2;
@@ -58,11 +52,6 @@ message AggregatedCategoryScoresRequest {
 }
 
 message ScoresByTicketRequest {
-  google.protobuf.Timestamp start_date = 1;
-  google.protobuf.Timestamp end_date = 2;
-}
-
-message OverallQualityScoreRequest {
   google.protobuf.Timestamp start_date = 1;
   google.protobuf.Timestamp end_date = 2;
 }

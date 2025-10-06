@@ -11,8 +11,6 @@ import (
 	"google.golang.org/protobuf/types/known/wrapperspb"
 )
 
-const RATING_TO_PERCENT_MODIFICATOR = 20
-
 // GetAggregatedCategoryScores retrieves and aggregates category scores over time
 // It automatically selects daily or weekly granularity based on the date range
 func (s *ScoreService) GetAggregatedCategoryScores(startDate, endDate time.Time) (*proto.AggregatedCategoryScoresResponse, error) {
@@ -48,7 +46,7 @@ func (s *ScoreService) GetAggregatedCategoryScores(startDate, endDate time.Time)
 			byCat[cid] = series
 		}
 
-		var score = r.AvgPercent * r.CategoryWeight * RATING_TO_PERCENT_MODIFICATOR
+		score := CalculateCategoryScore(r.AvgPercent, r.CategoryWeight)
 		series.Scores = append(series.Scores, &proto.ScorePoint{
 			Date:  timestamppb.New(r.Date),
 			Score: float32(score),

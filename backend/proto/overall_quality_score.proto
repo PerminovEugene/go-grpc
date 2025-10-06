@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package analytics;
+
+option go_package = "go-grpc-backend/proto";
+
+import "google/protobuf/timestamp.proto";
+
+message OverallQualityScoreRequest {
+  google.protobuf.Timestamp start_date = 1;
+  google.protobuf.Timestamp end_date = 2;
+}
+
+message OverallQualityScoreResponse {
+  float overall_score = 1;  // Overall score as percentage (0-100)
+  int32 total_ratings = 2;  // Total number of ratings in the period
+  google.protobuf.Timestamp start_date = 3;
+  google.protobuf.Timestamp end_date = 4;
+}
+

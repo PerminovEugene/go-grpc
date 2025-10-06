@@ -141,13 +141,14 @@ func (r *AnalyticsRepository) GetScoresByTicket(startDate, endDate time.Time) ([
 			t.id as ticket_id,
 			rc.id as category_id,
 			rc.name as category_name,
+			rc.weight as category_weight,
 			AVG(r.rating) as avg_score,
 			COUNT(r.id) as rating_count
 		FROM ratings r
 		JOIN tickets t ON r.ticket_id = t.id
 		JOIN rating_categories rc ON r.rating_category_id = rc.id
 		WHERE r.created_at >= ? AND r.created_at <= ?
-		GROUP BY t.id, rc.id, rc.name
+		GROUP BY t.id, rc.id, rc.name, rc.weight
 		ORDER BY t.id, rc.name
 	`
 
@@ -165,6 +166,7 @@ func (r *AnalyticsRepository) GetScoresByTicket(startDate, endDate time.Time) ([
 			&score.TicketID,
 			&score.CategoryID,
 			&score.CategoryName,
+			&score.CategoryWeight,
 			&score.Score,
 			&score.RatingCount,
 		)
@@ -178,24 +180,46 @@ func (r *AnalyticsRepository) GetScoresByTicket(startDate, endDate time.Time) ([
 	return scores, nil
 }
 
-func (r *AnalyticsRepository) GetOverallQualityScore(startDate, endDate time.Time) (float64, int, error) {
+func (r *AnalyticsRepository) GetOverallQualityScore(startDate, endDate time.Time) ([]models.CategoryScore, error) {
 	query := `
 		SELECT 
-			AVG(r.rating) as overall_score,
-			COUNT(r.id) as total_ratings
+			rc.id as category_id,
+			rc.name as category_name,
+			rc.weight as category_weight,
+			AVG(r.rating) as avg_score,
+			COUNT(r.id) as rating_count
 		FROM ratings r
+		JOIN rating_categories rc ON r.rating_category_id = rc.id
 		WHERE r.created_at >= ? AND r.created_at <= ?
+		GROUP BY rc.id, rc.name, rc.weight
+		ORDER BY rc.name
 	`
 
-	var overallScore float64
-	var totalRatings int
-
-	err := r.db.QueryRow(query, startDate, endDate).Scan(&overallScore, &totalRatings)
+	rows, err := r.db.Query(query, startDate, endDate)
 	if err != nil {
-		return 0, 0, fmt.Errorf("failed to query overall quality score: %v", err)
+		return nil, fmt.Errorf("failed to query overall quality score: %v", err)
+	}
+	defer rows.Close()
+
+	var categoryScores []models.CategoryScore
+	for rows.Next() {
+		var cs models.CategoryScore
+
+		err := rows.Scan(
+			&cs.CategoryID,
+			&cs.CategoryName,
+			&cs.CategoryWeight,
+			&cs.Score,
+			&cs.RatingCount,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("failed to scan category score: %v", err)
+		}
+
+		categoryScores = append(categoryScores, cs)
 	}
 
-	return overallScore, totalRatings, nil
+	return categoryScores, nil
 }
 
 func (r *AnalyticsRepository) GetRatingCategories() ([]models.RatingCategory, error) {
