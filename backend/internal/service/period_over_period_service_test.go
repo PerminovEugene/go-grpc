@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"go-grpc-backend/internal/models"
-	"go-grpc-backend/proto"
 )
 
 // Mock repository for period over period testing
@@ -30,77 +29,16 @@ func (m *mockPeriodOverPeriodRepository) GetOverallQualityScore(startDate, endDa
 	return m.previousCategoryScores, nil
 }
 
-// testPeriodOverPeriodService wraps the logic we want to test
-type testPeriodOverPeriodService struct {
-	repo *mockPeriodOverPeriodRepository
+func (m *mockPeriodOverPeriodRepository) GetDailyAggregatedCategoryRatings(startDate, endDate time.Time) ([]models.CategoryRatingOverTimePeriod, error) {
+	return nil, nil
 }
 
-func (s *testPeriodOverPeriodService) GetOverallQualityScore(startDate, endDate time.Time) (*proto.OverallQualityScoreResponse, error) {
-	categoryScores, err := s.repo.GetOverallQualityScore(startDate, endDate)
-	if err != nil {
-		return nil, err
-	}
-
-	if len(categoryScores) == 0 {
-		return &proto.OverallQualityScoreResponse{
-			OverallScore: 0,
-			TotalRatings: 0,
-		}, nil
-	}
-
-	var totalScore float64
-	var totalRatings int32
-
-	for _, cs := range categoryScores {
-		categoryScore := CalculateCategoryScore(cs.Score, cs.CategoryWeight)
-		totalScore += categoryScore
-		totalRatings += int32(cs.RatingCount)
-	}
-
-	overallScore := totalScore / float64(len(categoryScores))
-
-	return &proto.OverallQualityScoreResponse{
-		OverallScore: float32(overallScore),
-		TotalRatings: totalRatings,
-	}, nil
+func (m *mockPeriodOverPeriodRepository) GetWeeklyAggregatedCategoryRatings(startDate, endDate time.Time) ([]models.CategoryRatingOverTimePeriod, error) {
+	return nil, nil
 }
 
-func (s *testPeriodOverPeriodService) GetPeriodOverPeriodChange(
-	currentStart, currentEnd, previousStart, previousEnd time.Time,
-) (*proto.PeriodOverPeriodChangeResponse, error) {
-	// Get overall quality score for current period
-	currentResponse, err := s.GetOverallQualityScore(currentStart, currentEnd)
-	if err != nil {
-		return nil, err
-	}
-
-	// Get overall quality score for previous period
-	previousResponse, err := s.GetOverallQualityScore(previousStart, previousEnd)
-	if err != nil {
-		return nil, err
-	}
-
-	// Calculate percentage change
-	var changePercentage float32
-	if previousResponse.OverallScore != 0 {
-		changePercentage = ((currentResponse.OverallScore - previousResponse.OverallScore) / previousResponse.OverallScore) * 100
-	} else {
-		changePercentage = 0
-	}
-
-	resp := &proto.PeriodOverPeriodChangeResponse{
-		CurrentPeriodScore:   currentResponse.OverallScore,
-		PreviousPeriodScore:  previousResponse.OverallScore,
-		ChangePercentage:     changePercentage,
-		CurrentTotalRatings:  currentResponse.TotalRatings,
-		PreviousTotalRatings: previousResponse.TotalRatings,
-	}
-
-	return resp, nil
-}
-
-func newTestPeriodOverPeriodService(repo *mockPeriodOverPeriodRepository) *testPeriodOverPeriodService {
-	return &testPeriodOverPeriodService{repo: repo}
+func (m *mockPeriodOverPeriodRepository) GetScoresByTicket(startDate, endDate time.Time) ([]models.TicketCategoryScore, error) {
+	return nil, nil
 }
 
 func TestScoreService_GetPeriodOverPeriodChange_PositiveGrowth(t *testing.T) {
@@ -121,8 +59,7 @@ func TestScoreService_GetPeriodOverPeriodChange_PositiveGrowth(t *testing.T) {
 		},
 	}
 
-	service := newTestPeriodOverPeriodService(mockRepo)
-	result, err := service.GetPeriodOverPeriodChange(currentStart, currentEnd, previousStart, previousEnd)
+	result, err := GetPeriodOverPeriodChange(mockRepo, currentStart, currentEnd, previousStart, previousEnd)
 
 	if err != nil {
 		t.Fatalf("GetPeriodOverPeriodChange() error = %v", err)
@@ -171,8 +108,7 @@ func TestScoreService_GetPeriodOverPeriodChange_NegativeGrowth(t *testing.T) {
 		},
 	}
 
-	service := newTestPeriodOverPeriodService(mockRepo)
-	result, err := service.GetPeriodOverPeriodChange(currentStart, currentEnd, previousStart, previousEnd)
+	result, err := GetPeriodOverPeriodChange(mockRepo, currentStart, currentEnd, previousStart, previousEnd)
 
 	if err != nil {
 		t.Fatalf("GetPeriodOverPeriodChange() error = %v", err)
@@ -202,8 +138,7 @@ func TestScoreService_GetPeriodOverPeriodChange_NoChange(t *testing.T) {
 		},
 	}
 
-	service := newTestPeriodOverPeriodService(mockRepo)
-	result, err := service.GetPeriodOverPeriodChange(currentStart, currentEnd, previousStart, previousEnd)
+	result, err := GetPeriodOverPeriodChange(mockRepo, currentStart, currentEnd, previousStart, previousEnd)
 
 	if err != nil {
 		t.Fatalf("GetPeriodOverPeriodChange() error = %v", err)
@@ -232,8 +167,7 @@ func TestScoreService_GetPeriodOverPeriodChange_PreviousPeriodZero(t *testing.T)
 		previousCategoryScores: []models.CategoryScore{}, // Empty = score 0
 	}
 
-	service := newTestPeriodOverPeriodService(mockRepo)
-	result, err := service.GetPeriodOverPeriodChange(currentStart, currentEnd, previousStart, previousEnd)
+	result, err := GetPeriodOverPeriodChange(mockRepo, currentStart, currentEnd, previousStart, previousEnd)
 
 	if err != nil {
 		t.Fatalf("GetPeriodOverPeriodChange() error = %v", err)
@@ -267,8 +201,7 @@ func TestScoreService_GetPeriodOverPeriodChange_BothPeriodsZero(t *testing.T) {
 		previousCategoryScores: []models.CategoryScore{},
 	}
 
-	service := newTestPeriodOverPeriodService(mockRepo)
-	result, err := service.GetPeriodOverPeriodChange(currentStart, currentEnd, previousStart, previousEnd)
+	result, err := GetPeriodOverPeriodChange(mockRepo, currentStart, currentEnd, previousStart, previousEnd)
 
 	if err != nil {
 		t.Fatalf("GetPeriodOverPeriodChange() error = %v", err)
@@ -315,8 +248,7 @@ func TestScoreService_GetPeriodOverPeriodChange_MultipleCategories(t *testing.T)
 		},
 	}
 
-	service := newTestPeriodOverPeriodService(mockRepo)
-	result, err := service.GetPeriodOverPeriodChange(currentStart, currentEnd, previousStart, previousEnd)
+	result, err := GetPeriodOverPeriodChange(mockRepo, currentStart, currentEnd, previousStart, previousEnd)
 
 	if err != nil {
 		t.Fatalf("GetPeriodOverPeriodChange() error = %v", err)
@@ -360,8 +292,7 @@ func TestScoreService_GetPeriodOverPeriodChange_CurrentPeriodError(t *testing.T)
 		overallScoreError: expectedError,
 	}
 
-	service := newTestPeriodOverPeriodService(mockRepo)
-	result, err := service.GetPeriodOverPeriodChange(currentStart, currentEnd, previousStart, previousEnd)
+	result, err := GetPeriodOverPeriodChange(mockRepo, currentStart, currentEnd, previousStart, previousEnd)
 
 	if err == nil {
 		t.Fatal("Expected error, got nil")
@@ -393,8 +324,7 @@ func TestScoreService_GetPeriodOverPeriodChange_ExampleUseCase_WeekOverWeek(t *t
 		},
 	}
 
-	service := newTestPeriodOverPeriodService(mockRepo)
-	result, err := service.GetPeriodOverPeriodChange(currentStart, currentEnd, previousStart, previousEnd)
+	result, err := GetPeriodOverPeriodChange(mockRepo, currentStart, currentEnd, previousStart, previousEnd)
 
 	if err != nil {
 		t.Fatalf("GetPeriodOverPeriodChange() error = %v", err)
@@ -436,8 +366,7 @@ func TestScoreService_GetPeriodOverPeriodChange_LargePositiveChange(t *testing.T
 		},
 	}
 
-	service := newTestPeriodOverPeriodService(mockRepo)
-	result, err := service.GetPeriodOverPeriodChange(currentStart, currentEnd, previousStart, previousEnd)
+	result, err := GetPeriodOverPeriodChange(mockRepo, currentStart, currentEnd, previousStart, previousEnd)
 
 	if err != nil {
 		t.Fatalf("GetPeriodOverPeriodChange() error = %v", err)
@@ -467,8 +396,7 @@ func TestScoreService_GetPeriodOverPeriodChange_LargeNegativeChange(t *testing.T
 		},
 	}
 
-	service := newTestPeriodOverPeriodService(mockRepo)
-	result, err := service.GetPeriodOverPeriodChange(currentStart, currentEnd, previousStart, previousEnd)
+	result, err := GetPeriodOverPeriodChange(mockRepo, currentStart, currentEnd, previousStart, previousEnd)
 
 	if err != nil {
 		t.Fatalf("GetPeriodOverPeriodChange() error = %v", err)

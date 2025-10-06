@@ -3,6 +3,7 @@ package service
 import (
 	"time"
 
+	"go-grpc-backend/internal/repository"
 	"go-grpc-backend/proto"
 
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -12,9 +13,9 @@ import (
 // Calculates the average of all category scores (weighted by category weight)
 // Formula: (sum of all category scores) / number of categories
 // Where each category score = AvgPercent * CategoryWeight * RATING_TO_PERCENT_MODIFICATOR
-func (s *ScoreService) GetOverallQualityScore(startDate, endDate time.Time) (*proto.OverallQualityScoreResponse, error) {
+func GetOverallQualityScore(repo repository.AnalyticsRepositoryInterface, startDate, endDate time.Time) (*proto.OverallQualityScoreResponse, error) {
 	// Get category-level data from repository
-	categoryScores, err := s.analyticsRepo.GetOverallQualityScore(startDate, endDate)
+	categoryScores, err := repo.GetOverallQualityScore(startDate, endDate)
 	if err != nil {
 		return nil, err
 	}

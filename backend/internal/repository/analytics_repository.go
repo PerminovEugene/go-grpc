@@ -8,6 +8,14 @@ import (
 	"go-grpc-backend/internal/models"
 )
 
+// AnalyticsRepositoryInterface defines the contract for analytics data access
+type AnalyticsRepositoryInterface interface {
+	GetDailyAggregatedCategoryRatings(startDate, endDate time.Time) ([]models.CategoryRatingOverTimePeriod, error)
+	GetWeeklyAggregatedCategoryRatings(startDate, endDate time.Time) ([]models.CategoryRatingOverTimePeriod, error)
+	GetScoresByTicket(startDate, endDate time.Time) ([]models.TicketCategoryScore, error)
+	GetOverallQualityScore(startDate, endDate time.Time) ([]models.CategoryScore, error)
+}
+
 type AnalyticsRepository struct {
 	db *sql.DB
 }

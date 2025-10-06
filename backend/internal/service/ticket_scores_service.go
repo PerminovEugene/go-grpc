@@ -3,15 +3,16 @@ package service
 import (
 	"time"
 
+	"go-grpc-backend/internal/repository"
 	"go-grpc-backend/proto"
 
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 // GetScoresByTicket retrieves and aggregates category scores by ticket for a given period
-func (s *ScoreService) GetScoresByTicket(startDate, endDate time.Time) (*proto.ScoresByTicketResponse, error) {
+func GetScoresByTicket(repo repository.AnalyticsRepositoryInterface, startDate, endDate time.Time) (*proto.ScoresByTicketResponse, error) {
 	// Get data from repository
-	scores, err := s.analyticsRepo.GetScoresByTicket(startDate, endDate)
+	scores, err := repo.GetScoresByTicket(startDate, endDate)
 	if err != nil {
 		return nil, err
 	}

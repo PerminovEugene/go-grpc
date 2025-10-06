@@ -2,15 +2,11 @@ package service
 
 import (
 	"errors"
-	"sort"
 	"testing"
 	"time"
 
 	"go-grpc-backend/internal/models"
 	"go-grpc-backend/proto"
-
-	"google.golang.org/protobuf/types/known/timestamppb"
-	"google.golang.org/protobuf/types/known/wrapperspb"
 )
 
 // Mock repository for category scores testing
@@ -35,80 +31,12 @@ func (m *mockCategoryScoresRepository) GetWeeklyAggregatedCategoryRatings(startD
 	return m.weeklyRatings, nil
 }
 
-// testScoreService wraps the logic we want to test without using the actual ScoreService struct
-// This avoids the type incompatibility issue with the mock repository
-type testScoreService struct {
-	repo *mockCategoryScoresRepository
+func (m *mockCategoryScoresRepository) GetScoresByTicket(startDate, endDate time.Time) ([]models.TicketCategoryScore, error) {
+	return nil, nil
 }
 
-func (s *testScoreService) GetAggregatedCategoryScores(startDate, endDate time.Time) (*proto.AggregatedCategoryScoresResponse, error) {
-	duration := endDate.Sub(startDate)
-	useWeekly := duration > 30*24*time.Hour
-
-	var (
-		rows []models.CategoryRatingOverTimePeriod
-		err  error
-	)
-	if useWeekly {
-		rows, err = s.repo.GetWeeklyAggregatedCategoryRatings(startDate, endDate)
-	} else {
-		rows, err = s.repo.GetDailyAggregatedCategoryRatings(startDate, endDate)
-	}
-	if err != nil {
-		return nil, err
-	}
-
-	// Group by category → collect series slice (copy of the actual implementation)
-	byCat := make(map[int32]*proto.CategorySeries)
-	for _, r := range rows {
-		cid := int32(r.CategoryID)
-
-		series, ok := byCat[cid]
-		if !ok {
-			series = &proto.CategorySeries{
-				CategoryId:         cid,
-				CategoryName:       r.CategoryName,
-				CategoryTotalCount: 0,
-				Scores:             nil,
-			}
-			byCat[cid] = series
-		}
-
-		var score = r.AvgPercent * r.CategoryWeight * RATING_TO_PERCENT_MODIFICATOR
-		series.Scores = append(series.Scores, &proto.ScorePoint{
-			Date:  timestamppb.New(r.Date),
-			Score: float32(score),
-			Count: wrapperspb.Int32(int32(r.RatingCount)),
-		})
-		series.CategoryTotalCount += int32(r.RatingCount)
-	}
-
-	categories := make([]*proto.CategorySeries, 0, len(byCat))
-	for _, s := range byCat {
-		sort.Slice(s.Scores, func(i, j int) bool {
-			return s.Scores[i].Date.AsTime().Before(s.Scores[j].Date.AsTime())
-		})
-		categories = append(categories, s)
-	}
-
-	gran := proto.Granularity_GRANULARITY_DAY
-	if useWeekly {
-		gran = proto.Granularity_GRANULARITY_WEEK
-	}
-
-	resp := &proto.AggregatedCategoryScoresResponse{
-		Granularity: gran,
-		BucketRange: &proto.BucketRange{
-			Start: timestamppb.New(startDate),
-			End:   timestamppb.New(endDate),
-		},
-		Categories: categories,
-	}
-	return resp, nil
-}
-
-func newTestScoreService(repo *mockCategoryScoresRepository) *testScoreService {
-	return &testScoreService{repo: repo}
+func (m *mockCategoryScoresRepository) GetOverallQualityScore(startDate, endDate time.Time) ([]models.CategoryScore, error) {
+	return nil, nil
 }
 
 func TestScoreService_GetAggregatedCategoryScores_DailyGranularity(t *testing.T) {
@@ -145,8 +73,7 @@ func TestScoreService_GetAggregatedCategoryScores_DailyGranularity(t *testing.T)
 		},
 	}
 
-	service := newTestScoreService(mockRepo)
-	result, err := service.GetAggregatedCategoryScores(startDate, endDate)
+	result, err := GetAggregatedCategoryScores(mockRepo, startDate, endDate)
 
 	if err != nil {
 		t.Fatalf("GetAggregatedCategoryScores() error = %v", err)
@@ -229,8 +156,7 @@ func TestScoreService_GetAggregatedCategoryScores_WeeklyGranularity(t *testing.T
 		},
 	}
 
-	service := newTestScoreService(mockRepo)
-	result, err := service.GetAggregatedCategoryScores(startDate, endDate)
+	result, err := GetAggregatedCategoryScores(mockRepo, startDate, endDate)
 
 	if err != nil {
 		t.Fatalf("GetAggregatedCategoryScores() error = %v", err)
@@ -302,8 +228,7 @@ func TestScoreService_GetAggregatedCategoryScores_MultipleCategories(t *testing.
 		},
 	}
 
-	service := newTestScoreService(mockRepo)
-	result, err := service.GetAggregatedCategoryScores(startDate, endDate)
+	result, err := GetAggregatedCategoryScores(mockRepo, startDate, endDate)
 
 	if err != nil {
 		t.Fatalf("GetAggregatedCategoryScores() error = %v", err)
@@ -350,8 +275,7 @@ func TestScoreService_GetAggregatedCategoryScores_ScoreCalculation(t *testing.T)
 		},
 	}
 
-	service := newTestScoreService(mockRepo)
-	result, err := service.GetAggregatedCategoryScores(startDate, endDate)
+	result, err := GetAggregatedCategoryScores(mockRepo, startDate, endDate)
 
 	if err != nil {
 		t.Fatalf("GetAggregatedCategoryScores() error = %v", err)
@@ -389,8 +313,7 @@ func TestScoreService_GetAggregatedCategoryScores_EmptyResults(t *testing.T) {
 		dailyRatings: []models.CategoryRatingOverTimePeriod{},
 	}
 
-	service := newTestScoreService(mockRepo)
-	result, err := service.GetAggregatedCategoryScores(startDate, endDate)
+	result, err := GetAggregatedCategoryScores(mockRepo, startDate, endDate)
 
 	if err != nil {
 		t.Fatalf("GetAggregatedCategoryScores() error = %v", err)
@@ -417,8 +340,7 @@ func TestScoreService_GetAggregatedCategoryScores_DailyError(t *testing.T) {
 		dailyRatingsError: expectedError,
 	}
 
-	service := newTestScoreService(mockRepo)
-	result, err := service.GetAggregatedCategoryScores(startDate, endDate)
+	result, err := GetAggregatedCategoryScores(mockRepo, startDate, endDate)
 
 	if err == nil {
 		t.Fatal("Expected error, got nil")
@@ -443,8 +365,7 @@ func TestScoreService_GetAggregatedCategoryScores_WeeklyError(t *testing.T) {
 		weeklyRatingsError: expectedError,
 	}
 
-	service := newTestScoreService(mockRepo)
-	result, err := service.GetAggregatedCategoryScores(startDate, endDate)
+	result, err := GetAggregatedCategoryScores(mockRepo, startDate, endDate)
 
 	if err == nil {
 		t.Fatal("Expected error, got nil")
@@ -494,8 +415,7 @@ func TestScoreService_GetAggregatedCategoryScores_SortingByDate(t *testing.T) {
 		},
 	}
 
-	service := newTestScoreService(mockRepo)
-	result, err := service.GetAggregatedCategoryScores(startDate, endDate)
+	result, err := GetAggregatedCategoryScores(mockRepo, startDate, endDate)
 
 	if err != nil {
 		t.Fatalf("GetAggregatedCategoryScores() error = %v", err)
@@ -576,8 +496,7 @@ func TestScoreService_GetAggregatedCategoryScores_ThresholdBoundary(t *testing.T
 				weeklyRatings: []models.CategoryRatingOverTimePeriod{},
 			}
 
-			service := newTestScoreService(mockRepo)
-			result, err := service.GetAggregatedCategoryScores(startDate, endDate)
+			result, err := GetAggregatedCategoryScores(mockRepo, startDate, endDate)
 
 			if err != nil {
 				t.Fatalf("GetAggregatedCategoryScores() error = %v", err)
@@ -599,8 +518,7 @@ func TestScoreService_GetAggregatedCategoryScores_NoData(t *testing.T) {
 		dailyRatings: []models.CategoryRatingOverTimePeriod{},
 	}
 
-	service := newTestScoreService(mockRepo)
-	result, err := service.GetAggregatedCategoryScores(startDate, endDate)
+	result, err := GetAggregatedCategoryScores(mockRepo, startDate, endDate)
 
 	if err != nil {
 		t.Fatalf("GetAggregatedCategoryScores() error = %v, expected nil", err)
@@ -656,8 +574,7 @@ func TestScoreService_GetAggregatedCategoryScores_SingleScore(t *testing.T) {
 		},
 	}
 
-	service := newTestScoreService(mockRepo)
-	result, err := service.GetAggregatedCategoryScores(startDate, endDate)
+	result, err := GetAggregatedCategoryScores(mockRepo, startDate, endDate)
 
 	if err != nil {
 		t.Fatalf("GetAggregatedCategoryScores() error = %v", err)
@@ -760,8 +677,7 @@ func TestScoreService_GetAggregatedCategoryScores_MultipleScores(t *testing.T) {
 		},
 	}
 
-	service := newTestScoreService(mockRepo)
-	result, err := service.GetAggregatedCategoryScores(startDate, endDate)
+	result, err := GetAggregatedCategoryScores(mockRepo, startDate, endDate)
 
 	if err != nil {
 		t.Fatalf("GetAggregatedCategoryScores() error = %v", err)

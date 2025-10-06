@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"go-grpc-backend/internal/models"
-	"go-grpc-backend/proto"
 )
 
 // Mock repository for overall quality score testing
@@ -22,43 +21,16 @@ func (m *mockOverallQualityScoreRepository) GetOverallQualityScore(startDate, en
 	return m.categoryScores, nil
 }
 
-// testOverallQualityScoreService wraps the logic we want to test
-type testOverallQualityScoreService struct {
-	repo *mockOverallQualityScoreRepository
+func (m *mockOverallQualityScoreRepository) GetDailyAggregatedCategoryRatings(startDate, endDate time.Time) ([]models.CategoryRatingOverTimePeriod, error) {
+	return nil, nil
 }
 
-func (s *testOverallQualityScoreService) GetOverallQualityScore(startDate, endDate time.Time) (*proto.OverallQualityScoreResponse, error) {
-	categoryScores, err := s.repo.GetOverallQualityScore(startDate, endDate)
-	if err != nil {
-		return nil, err
-	}
-
-	if len(categoryScores) == 0 {
-		return &proto.OverallQualityScoreResponse{
-			OverallScore: 0,
-			TotalRatings: 0,
-		}, nil
-	}
-
-	var totalScore float64
-	var totalRatings int32
-
-	for _, cs := range categoryScores {
-		categoryScore := CalculateCategoryScore(cs.Score, cs.CategoryWeight)
-		totalScore += categoryScore
-		totalRatings += int32(cs.RatingCount)
-	}
-
-	overallScore := totalScore / float64(len(categoryScores))
-
-	return &proto.OverallQualityScoreResponse{
-		OverallScore: float32(overallScore),
-		TotalRatings: totalRatings,
-	}, nil
+func (m *mockOverallQualityScoreRepository) GetWeeklyAggregatedCategoryRatings(startDate, endDate time.Time) ([]models.CategoryRatingOverTimePeriod, error) {
+	return nil, nil
 }
 
-func newTestOverallQualityScoreService(repo *mockOverallQualityScoreRepository) *testOverallQualityScoreService {
-	return &testOverallQualityScoreService{repo: repo}
+func (m *mockOverallQualityScoreRepository) GetScoresByTicket(startDate, endDate time.Time) ([]models.TicketCategoryScore, error) {
+	return nil, nil
 }
 
 func TestScoreService_GetOverallQualityScore_Success(t *testing.T) {
@@ -76,8 +48,7 @@ func TestScoreService_GetOverallQualityScore_Success(t *testing.T) {
 		},
 	}
 
-	service := newTestOverallQualityScoreService(mockRepo)
-	result, err := service.GetOverallQualityScore(startDate, endDate)
+	result, err := GetOverallQualityScore(mockRepo, startDate, endDate)
 
 	if err != nil {
 		t.Fatalf("GetOverallQualityScore() error = %v", err)
@@ -104,8 +75,7 @@ func TestScoreService_GetOverallQualityScore_SingleCategory(t *testing.T) {
 		},
 	}
 
-	service := newTestOverallQualityScoreService(mockRepo)
-	result, err := service.GetOverallQualityScore(startDate, endDate)
+	result, err := GetOverallQualityScore(mockRepo, startDate, endDate)
 
 	if err != nil {
 		t.Fatalf("GetOverallQualityScore() error = %v", err)
@@ -138,8 +108,7 @@ func TestScoreService_GetOverallQualityScore_ThreeCategories(t *testing.T) {
 		},
 	}
 
-	service := newTestOverallQualityScoreService(mockRepo)
-	result, err := service.GetOverallQualityScore(startDate, endDate)
+	result, err := GetOverallQualityScore(mockRepo, startDate, endDate)
 
 	if err != nil {
 		t.Fatalf("GetOverallQualityScore() error = %v", err)
@@ -163,8 +132,7 @@ func TestScoreService_GetOverallQualityScore_ZeroCategories(t *testing.T) {
 		categoryScores: []models.CategoryScore{},
 	}
 
-	service := newTestOverallQualityScoreService(mockRepo)
-	result, err := service.GetOverallQualityScore(startDate, endDate)
+	result, err := GetOverallQualityScore(mockRepo, startDate, endDate)
 
 	if err != nil {
 		t.Fatalf("GetOverallQualityScore() error = %v", err)
@@ -188,8 +156,7 @@ func TestScoreService_GetOverallQualityScore_Error(t *testing.T) {
 		overallScoreError: expectedError,
 	}
 
-	service := newTestOverallQualityScoreService(mockRepo)
-	result, err := service.GetOverallQualityScore(startDate, endDate)
+	result, err := GetOverallQualityScore(mockRepo, startDate, endDate)
 
 	if err == nil {
 		t.Fatal("Expected error, got nil")
@@ -228,8 +195,7 @@ func TestScoreService_GetOverallQualityScore_ExampleUseCase_96Percent(t *testing
 		},
 	}
 
-	service := newTestOverallQualityScoreService(mockRepo)
-	result, err := service.GetOverallQualityScore(startDate, endDate)
+	result, err := GetOverallQualityScore(mockRepo, startDate, endDate)
 
 	if err != nil {
 		t.Fatalf("GetOverallQualityScore() error = %v", err)
@@ -260,8 +226,7 @@ func TestScoreService_GetOverallQualityScore_DifferentWeights(t *testing.T) {
 		},
 	}
 
-	service := newTestOverallQualityScoreService(mockRepo)
-	result, err := service.GetOverallQualityScore(startDate, endDate)
+	result, err := GetOverallQualityScore(mockRepo, startDate, endDate)
 
 	if err != nil {
 		t.Fatalf("GetOverallQualityScore() error = %v", err)
@@ -291,8 +256,7 @@ func TestScoreService_GetOverallQualityScore_AllPerfectScores(t *testing.T) {
 		},
 	}
 
-	service := newTestOverallQualityScoreService(mockRepo)
-	result, err := service.GetOverallQualityScore(startDate, endDate)
+	result, err := GetOverallQualityScore(mockRepo, startDate, endDate)
 
 	if err != nil {
 		t.Fatalf("GetOverallQualityScore() error = %v", err)
@@ -323,8 +287,7 @@ func TestScoreService_GetOverallQualityScore_LowScores(t *testing.T) {
 		},
 	}
 
-	service := newTestOverallQualityScoreService(mockRepo)
-	result, err := service.GetOverallQualityScore(startDate, endDate)
+	result, err := GetOverallQualityScore(mockRepo, startDate, endDate)
 
 	if err != nil {
 		t.Fatalf("GetOverallQualityScore() error = %v", err)
@@ -382,8 +345,7 @@ func TestScoreService_GetOverallQualityScore_FormulaVerification(t *testing.T) {
 				categoryScores: tt.categories,
 			}
 
-			service := newTestOverallQualityScoreService(mockRepo)
-			result, err := service.GetOverallQualityScore(startDate, endDate)
+			result, err := GetOverallQualityScore(mockRepo, startDate, endDate)
 
 			if err != nil {
 				t.Fatalf("GetOverallQualityScore() error = %v", err)

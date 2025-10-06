@@ -17,7 +17,6 @@ import (
 type AnalyticsServer struct {
 	proto.UnimplementedAnalyticsServiceServer
 	analyticsRepo *repository.AnalyticsRepository
-	scoreService  *service.ScoreService
 	grpcServer    *grpc.Server
 }
 
@@ -28,12 +27,10 @@ func NewAnalyticsServer() (*AnalyticsServer, error) {
 	}
 
 	analyticsRepo := repository.NewAnalyticsRepository(db.DB)
-	scoreService := service.NewScoreService(analyticsRepo)
 	grpcServer := grpc.NewServer()
 
 	server := &AnalyticsServer{
 		analyticsRepo: analyticsRepo,
-		scoreService:  scoreService,
 		grpcServer:    grpcServer,
 	}
 
@@ -66,21 +63,21 @@ func (s *AnalyticsServer) GetAggregatedCategoryScores(ctx context.Context, req *
 	startDate := req.StartDate.AsTime()
 	endDate := req.EndDate.AsTime()
 
-	return s.scoreService.GetAggregatedCategoryScores(startDate, endDate)
+	return service.GetAggregatedCategoryScores(s.analyticsRepo, startDate, endDate)
 }
 
 func (s *AnalyticsServer) GetScoresByTicket(ctx context.Context, req *proto.ScoresByTicketRequest) (*proto.ScoresByTicketResponse, error) {
 	startDate := req.StartDate.AsTime()
 	endDate := req.EndDate.AsTime()
 
-	return s.scoreService.GetScoresByTicket(startDate, endDate)
+	return service.GetScoresByTicket(s.analyticsRepo, startDate, endDate)
 }
 
 func (s *AnalyticsServer) GetOverallQualityScore(ctx context.Context, req *proto.OverallQualityScoreRequest) (*proto.OverallQualityScoreResponse, error) {
 	startDate := req.StartDate.AsTime()
 	endDate := req.EndDate.AsTime()
 
-	return s.scoreService.GetOverallQualityScore(startDate, endDate)
+	return service.GetOverallQualityScore(s.analyticsRepo, startDate, endDate)
 }
 
 func (s *AnalyticsServer) GetPeriodOverPeriodChange(ctx context.Context, req *proto.PeriodOverPeriodChangeRequest) (*proto.PeriodOverPeriodChangeResponse, error) {
@@ -89,5 +86,5 @@ func (s *AnalyticsServer) GetPeriodOverPeriodChange(ctx context.Context, req *pr
 	previousStart := req.PreviousStart.AsTime()
 	previousEnd := req.PreviousEnd.AsTime()
 
-	return s.scoreService.GetPeriodOverPeriodChange(currentStart, currentEnd, previousStart, previousEnd)
+	return service.GetPeriodOverPeriodChange(s.analyticsRepo, currentStart, currentEnd, previousStart, previousEnd)
 }

@@ -3,6 +3,7 @@ package service
 import (
 	"time"
 
+	"go-grpc-backend/internal/repository"
 	"go-grpc-backend/proto"
 
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -12,17 +13,18 @@ import (
 // Returns the current period score, previous period score, and the percentage change
 // Formula: ((currentScore - previousScore) / previousScore) * 100
 // Uses the same scoring algorithm as GetOverallQualityScore for consistency
-func (s *ScoreService) GetPeriodOverPeriodChange(
+func GetPeriodOverPeriodChange(
+	repo repository.AnalyticsRepositoryInterface,
 	currentStart, currentEnd, previousStart, previousEnd time.Time,
 ) (*proto.PeriodOverPeriodChangeResponse, error) {
 	// Get overall quality score for current period
-	currentResponse, err := s.GetOverallQualityScore(currentStart, currentEnd)
+	currentResponse, err := GetOverallQualityScore(repo, currentStart, currentEnd)
 	if err != nil {
 		return nil, err
 	}
 
 	// Get overall quality score for previous period
-	previousResponse, err := s.GetOverallQualityScore(previousStart, previousEnd)
+	previousResponse, err := GetOverallQualityScore(repo, previousStart, previousEnd)
 	if err != nil {
 		return nil, err
 	}

@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"go-grpc-backend/internal/models"
+	"go-grpc-backend/internal/repository"
 	"go-grpc-backend/proto"
 
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -13,7 +14,7 @@ import (
 
 // GetAggregatedCategoryScores retrieves and aggregates category scores over time
 // It automatically selects daily or weekly granularity based on the date range
-func (s *ScoreService) GetAggregatedCategoryScores(startDate, endDate time.Time) (*proto.AggregatedCategoryScoresResponse, error) {
+func GetAggregatedCategoryScores(repo repository.AnalyticsRepositoryInterface, startDate, endDate time.Time) (*proto.AggregatedCategoryScoresResponse, error) {
 	duration := endDate.Sub(startDate)
 	useWeekly := duration > 30*24*time.Hour
 
@@ -22,9 +23,9 @@ func (s *ScoreService) GetAggregatedCategoryScores(startDate, endDate time.Time)
 		err  error
 	)
 	if useWeekly {
-		rows, err = s.analyticsRepo.GetWeeklyAggregatedCategoryRatings(startDate, endDate)
+		rows, err = repo.GetWeeklyAggregatedCategoryRatings(startDate, endDate)
 	} else {
-		rows, err = s.analyticsRepo.GetDailyAggregatedCategoryRatings(startDate, endDate)
+		rows, err = repo.GetDailyAggregatedCategoryRatings(startDate, endDate)
 	}
 	if err != nil {
 		return nil, err
